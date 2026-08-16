@@ -18,7 +18,7 @@ interface transaction_interface
 	/**
 	 * The status for a completed payment
 	 */
-	public const STATUS_COMPLETED = 'COMPLETED';
+	const STATUS_COMPLETED = 'COMPLETED';
 
 	/**
 	 * Process a transaction from PayPal Orders v2 API.
@@ -29,6 +29,22 @@ interface transaction_interface
 	 * @return boolean The transaction was accepted
 	 */
 	public function process_transaction(array $order_data, $sandbox);
+
+	/**
+	 * Record a transaction directly in the database.
+	 *
+	 * @param string  $trans_id The transaction ID
+	 * @param boolean $sandbox  Sandbox mode is enabled
+	 * @param int     $amount   The payment amount in the currency subunit
+	 * @param string  $currency The currency code
+	 * @param int     $user_id  The user ID
+	 * @param int     $sub_id   The subscription ID
+	 * @param string  $gross    The gross payment amount
+	 * @param string  $payer_id The PayPal payer ID
+	 *
+	 * @return boolean The record was inserted successfully
+	 */
+	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id);
 
 	/**
 	 * Get transactions.

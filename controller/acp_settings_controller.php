@@ -67,6 +67,8 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 				'pp_secret'			=> $this->request->variable('pp_secret', ''),
 				'sb_client'			=> $this->request->variable('sb_client', ''),
 				'sb_secret'			=> $this->request->variable('sb_secret', ''),
+				'webhook_id'		=> $this->request->variable('webhook_id', ''),
+				'sb_webhook_id'		=> $this->request->variable('sb_webhook_id', ''),
 				'notify_admins'		=> $this->request->variable('notify_admins', false),
 				'collapse_terms'	=> max(2, $this->request->variable('collapse_terms', 0)),
 				'currency'			=> $this->request->variable('currency', ''),
@@ -135,6 +137,8 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 		$footer_options = $this->config['stevotvr_groupsub_footer_bbcode_options'];
 		$footer = generate_text_for_edit($this->config_text->get('stevotvr_groupsub_footer'), $footer_uid, $footer_options);
 
+		$webhook_url = generate_board_url() . '/groupsub/webhook';
+
 		$this->template->assign_vars(array(
 			'ERROR_MESSAGE'	=> implode('<br>', $errors),
 
@@ -150,6 +154,9 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 			'PP_SECRET'			=> $this->config['stevotvr_groupsub_pp_secret'],
 			'SB_CLIENT'			=> $this->config['stevotvr_groupsub_sb_client'],
 			'SB_SECRET'			=> $this->config['stevotvr_groupsub_sb_secret'],
+			'WEBHOOK_ID'		=> isset($this->config['stevotvr_groupsub_webhook_id']) ? $this->config['stevotvr_groupsub_webhook_id'] : '',
+			'SB_WEBHOOK_ID'		=> isset($this->config['stevotvr_groupsub_sb_webhook_id']) ? $this->config['stevotvr_groupsub_sb_webhook_id'] : '',
+			'U_WEBHOOK_URL'		=> $webhook_url,
 			'CURRENCY'			=> $this->config['stevotvr_groupsub_currency'],
 			'NOTIFY_ADMINS'		=> $this->config['stevotvr_groupsub_notify_admins'],
 			'HEADER'			=> $header['text'],

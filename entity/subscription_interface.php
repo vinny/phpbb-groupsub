@@ -77,4 +77,28 @@ interface subscription_interface extends entity_interface
 	 * @throws out_of_bounds
 	 */
 	public function set_expire($expire);
+
+	/**
+	 * @return string The PayPal Subscription ID
+	 */
+	public function get_paypal_sub_id();
+
+	/**
+	 * @param string $paypal_sub_id The PayPal Subscription ID
+	 *
+	 * @return subscription_interface This object for chaining
+	 */
+	public function set_paypal_sub_id($paypal_sub_id);
+
+	/**
+	 * @return bool Whether the subscription is set to auto-renew
+	 */
+	public function get_auto_renew();
+
+	/**
+	 * @param bool $auto_renew Whether the subscription is set to auto-renew
+	 *
+	 * @return subscription_interface This object for chaining
+	 */
+	public function set_auto_renew($auto_renew);
 }

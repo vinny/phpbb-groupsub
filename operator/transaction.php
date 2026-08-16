@@ -177,6 +177,14 @@ class transaction extends operator implements transaction_interface
 	}
 
 	/**
+	 * @inheritDoc
+	 */
+	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id)
+	{
+		return $this->insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id);
+	}
+
+	/**
 	 * Insert a transaction into the database.
 	 *
 	 * @param string  $trans_id The transaction ID

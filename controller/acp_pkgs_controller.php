@@ -82,9 +82,20 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 
 		foreach ($packages as $package)
 		{
+			$has_recurring = false;
+			foreach ($package['terms'] as $term)
+			{
+				if ($term->get_recurring())
+				{
+					$has_recurring = true;
+					break;
+				}
+			}
+
 			$this->template->assign_block_vars('package', array(
-				'IDENT'	=> $package['package']->get_ident(),
-				'NAME'	=> $package['package']->get_name(),
+				'IDENT'			=> $package['package']->get_ident(),
+				'NAME'			=> $package['package']->get_name(),
+				'S_RECURRING'	=> $has_recurring,
 
 				'U_MOVE_UP'		=> $this->u_action . '&amp;action=move_up&amp;id=' . $package['package']->get_id(),
 				'U_MOVE_DOWN'	=> $this->u_action . '&amp;action=move_down&amp;id=' . $package['package']->get_id(),
@@ -458,8 +469,9 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 			$currencies = $this->request->variable('pkg_currency', array(''));
 			$lengths = $this->request->variable('pkg_length', array(''));
 			$length_units = $this->request->variable('pkg_length_unit', array(''));
+			$recurrings = $this->request->variable('pkg_recurring', array(0));
 
-			$count = min(array_map('count', array($prices, $currencies, $lengths, $length_units)));
+			$count = min(array_map('count', array($prices, $currencies, $lengths, $length_units, $recurrings)));
 			for ($i = 0; $i < $count; $i++)
 			{
 				if (!is_numeric($lengths[$i]) || $lengths[$i] < 0 || !is_numeric($prices[$i]) || $prices[$i] < 0)
@@ -472,6 +484,7 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 					'CURRENCY'		=> $currencies[$i],
 					'LENGTH'		=> $lengths[$i],
 					'LENGTH_UNIT'	=> $length_units[$i],
+					'S_RECURRING'	=> !empty($recurrings[$i]),
 				));
 			}
 
@@ -498,6 +511,7 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 				'CURRENCY'		=> $term->get_currency(),
 				'LENGTH'		=> $length['length'],
 				'LENGTH_UNIT'	=> $length['unit'],
+				'S_RECURRING'	=> $term->get_recurring(),
 			));
 		}
 	}
@@ -515,8 +529,9 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 		$currencies = $this->request->variable('pkg_currency', array(''));
 		$lengths = $this->request->variable('pkg_length', array(''));
 		$length_units = $this->request->variable('pkg_length_unit', array(''));
+		$recurrings = $this->request->variable('pkg_recurring', array(0));
 
-		$count = min(array_map('count', array($prices, $currencies, $lengths, $length_units)));
+		$count = min(array_map('count', array($prices, $currencies, $lengths, $length_units, $recurrings)));
 		for ($i = 0; $i < $count; $i++)
 		{
 			if (!is_numeric($lengths[$i]) || $lengths[$i] < 0 || !is_numeric($prices[$i]) || $prices[$i] < 0)
@@ -524,10 +539,14 @@ class acp_pkgs_controller extends acp_base_controller implements acp_pkgs_interf
 				continue;
 			}
 
+			$length_days = $this->unit_helper->get_days($lengths[$i], $length_units[$i]);
+			$is_recurring = !empty($recurrings[$i]) && $length_days > 0;
+
 			$entity = $this->container->get('stevotvr.groupsub.entity.term')
 				->set_price($this->currency->parse_value($currencies[$i], $prices[$i]))
 				->set_currency($currencies[$i])
-				->set_length($this->unit_helper->get_days($lengths[$i], $length_units[$i]));
+				->set_length($length_days)
+				->set_recurring($is_recurring);
 
 			$entities[] = $entity;
 		}

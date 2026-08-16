@@ -52,9 +52,9 @@
 			<dt><label for="pkg_groups_start_add">{{ lang('ACP_GROUPSUB_PKG_GROUPS_ADD') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PKG_GROUPS_ADD_EXPLAIN') }}</span></dt>
 			<dd>
 				<select name="pkg_groups_start_add[]" id="pkg_groups_start_add" multiple size="10">
-	{% for g in loops.group %}
+					{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_START_ADD %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+					{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -62,9 +62,9 @@
 			<dt><label for="pkg_groups_start_remove">{{ lang('ACP_GROUPSUB_PKG_GROUPS_REMOVE') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PKG_GROUPS_REMOVE_EXPLAIN') }}</span></dt>
 			<dd>
 				<select name="pkg_groups_start_remove[]" id="pkg_groups_start_remove" multiple size="10">
-	{% for g in loops.group %}
+				{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_START_REMOVE %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+				{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -73,9 +73,9 @@
 			<dd>
 				<select name="pkg_default_group_start" id="pkg_default_group_start">
 					<option value="0"></option>
-	{% for g in loops.group %}
+					{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_START_DEFAULT %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+					{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -87,9 +87,9 @@
 			<dt><label for="pkg_groups_end_add">{{ lang('ACP_GROUPSUB_PKG_GROUPS_ADD') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PKG_GROUPS_ADD_EXPLAIN') }}</span></dt>
 			<dd>
 				<select name="pkg_groups_end_add[]" id="pkg_groups_end_add" multiple size="10">
-	{% for g in loops.group %}
+					{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_END_ADD %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+					{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -97,9 +97,9 @@
 			<dt><label for="pkg_groups_end_remove">{{ lang('ACP_GROUPSUB_PKG_GROUPS_REMOVE') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PKG_GROUPS_REMOVE_EXPLAIN') }}</span></dt>
 			<dd>
 				<select name="pkg_groups_end_remove[]" id="pkg_groups_end_remove" multiple size="10">
-	{% for g in loops.group %}
+				{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_END_REMOVE %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+				{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -108,9 +108,9 @@
 			<dd>
 				<select name="pkg_default_group_end" id="pkg_default_group_end">
 					<option value="0"></option>
-	{% for g in loops.group %}
+					{% for g in loops.group %}
 					<option value="{{ g.ID }}"{% if g.S_SELECTED_END_DEFAULT %} selected{% endif %}>{{ g.NAME }}</option>
-	{% endfor %}
+					{% endfor %}
 				</select>
 			</dd>
 		</dl>
@@ -123,26 +123,33 @@
 				<tr>
 					<th>{{ lang('ACP_GROUPSUB_PRICE') }}</th>
 					<th>{{ lang('ACP_GROUPSUB_LENGTH') }}</th>
+					<th>{{ lang('ACP_GROUPSUB_RECURRING') }}</th>
 					<th class="actions">{{ lang('ACTION') }}</th>
 				</tr>
 			</thead>
 			<tbody>
-	{% for t in loops.term %}
+			{% for t in loops.term %}
 				<tr>
 					<td>
 						<input class="text" type="text" name="pkg_price[]" size="6" maxlength="10" value="{{ t.PRICE }}">
 						<select name="pkg_currency[]" id="pkg_currency{{ loop.index }}">
-		{% for c in loops.currency %}
+						{% for c in loops.currency %}
 							<option value="{{ c.CURRENCY }}"{% if c.CURRENCY == t.CURRENCY %} selected{% endif %}>{{ c.CURRENCY }} {{ c.SYMBOL }}</option>
-		{% endfor %}
+						{% endfor %}
 						</select>
 					</td>
 					<td>
 						<input class="text" type="number" name="pkg_length[]" size="4" min="0" value="{{ t.LENGTH }}">
 						<select name="pkg_length_unit[]" id="pkg_length_unit{{ loop.index }}">
-		{% for u in loops.time_unit %}
+						{% for u in loops.time_unit %}
 							<option value="{{ u.ID }}"{% if u.ID == t.LENGTH_UNIT %} selected{% endif %}>{{ u.NAME }}</option>
-		{% endfor %}
+						{% endfor %}
+						</select>
+					</td>
+					<td>
+						<select name="pkg_recurring[]" id="pkg_recurring{{ loop.index }}">
+							<option value="0"{% if not t.S_RECURRING %} selected{% endif %}>{{ lang('GROUPSUB_ONE_TIME') }}</option>
+							<option value="1"{% if t.S_RECURRING %} selected{% endif %}>{{ lang('GROUPSUB_RECURRING') }}</option>
 						</select>
 					</td>
 					<td class="actions">
@@ -153,7 +160,7 @@
 						<a class="delete_term" href="#">{{ ICON_DELETE }}</a>
 					</td>
 				</tr>
-	{% endfor %}
+			{% endfor %}
 			</tbody>
 		</table>
 		<fieldset>
@@ -163,9 +170,9 @@
 				<dd>
 					<input class="text" type="text" id="pkg_price" name="pkg_price[]" size="6" maxlength="10" value="{{ PKG_PRICE }}">&nbsp;
 					<select name="pkg_currency[]" id="pkg_currency">
-	{% for c in loops.currency %}
+						{% for c in loops.currency %}
 						<option value="{{ c.CURRENCY }}"{% if c.S_DEFAULT %} selected{% endif %}>{{ c.CURRENCY }} ({{ c.SYMBOL }})</option>
-	{% endfor %}
+						{% endfor %}
 					</select>
 				</dd>
 			</dl>
@@ -174,9 +181,18 @@
 				<dd>
 					<input class="text" type="number" id="pkg_length" name="pkg_length[]" size="4" min="0" value="{{ PKG_LENGTH }}">&nbsp;
 					<select name="pkg_length_unit[]" id="pkg_length_unit">
-	{% for u in loops.time_unit %}
+						{% for u in loops.time_unit %}
 						<option value="{{ u.ID }}">{{ u.NAME }}</option>
-	{% endfor %}
+						{% endfor %}
+					</select>
+				</dd>
+			</dl>
+			<dl>
+				<dt><label for="pkg_recurring">{{ lang('ACP_GROUPSUB_PKG_RECURRING') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PKG_RECURRING_EXPLAIN') }}</span></dt>
+				<dd>
+					<select name="pkg_recurring[]" id="pkg_recurring">
+						<option value="0">{{ lang('GROUPSUB_ONE_TIME') }}</option>
+						<option value="1">{{ lang('GROUPSUB_RECURRING') }}</option>
 					</select>
 				</dd>
 			</dl>
@@ -211,7 +227,7 @@
 	{% for p in loops.package %}
 		<tr>
 			<td valign="top">{{ p.IDENT }}</td>
-			<td valign="top"><strong><a href="{{ p.U_EDIT }}">{{ p.NAME }}</a></strong></td>
+			<td valign="top"><strong><a href="{{ p.U_EDIT }}">{{ p.NAME }}</a></strong>{% if p.S_RECURRING %} <small style="color: #2e7d32; font-weight: bold;">({{ lang('ACP_GROUPSUB_AUTO_RENEWING') }})</small>{% endif %}</td>
 			<td>
 			{% if p.term %}
 				<div class="divtable">

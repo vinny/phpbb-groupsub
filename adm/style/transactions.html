@@ -25,11 +25,11 @@
 			<td>{{ t.USER|raw }}</td>
 			<td><a href="{{ t.U_SUBSCRIPTION }}">{{ lang('ACP_GROUPSUB_VIEW') }}</a></td>
 		</tr>
-{% else %}
+		{% else %}
 		<tr>
 			<td colspan="6" style="text-align: center;">{{ lang('ACP_GROUPSUB_NO_TRANS') }}</td>
 		</tr>
-{% endfor %}
+		{% endfor %}
 	</tbody>
 </table>
 
@@ -37,19 +37,19 @@
 	<fieldset class="display-options">
 		{{ lang('SORT_BY') ~ lang('COLON') }}
 		<select name="sk" id="sk">
-{% for k in sort_key %}
+		{% for k in sort_key %}
 			<option value="{{ k.KEY }}"{% if k.S_SELECTED %} selected{% endif %}>{{ k.NAME }}</option>
-{% endfor %}
+		{% endfor %}
 		</select>
 		<select name="sd" id="sd">
-{% for d in sort_dir %}
+		{% for d in sort_dir %}
 			<option value="{{ d.KEY }}"{% if d.S_SELECTED %} selected{% endif %}>{{ d.NAME }}</option>
-{% endfor %}
+		{% endfor %}
 		</select>
-{% if pagination %}
+		{% if pagination %}
 		{{ lang('ACP_GROUPSUB_ITEMS_PER_PAGE') ~ lang('COLON') }}
 		<input class="inputbox autowidth" type="number" name="limit" id="limit" min="0" max="100" value="{{ LIMIT }}">
-{% endif %}
+		{% endif %}
 		<input class="button2" type="submit" name="sort" value="{{ lang('GO') }}">
 	</fieldset>
 </form>

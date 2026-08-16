@@ -85,6 +85,13 @@ services:
         tags:
             - { name: notification.type }
 
+    stevotvr.groupsub.notification.type.renewed:
+        class: stevotvr\groupsub\notification\type\renewed
+        shared: false
+        parent: stevotvr.groupsub.notification.type
+        tags:
+            - { name: notification.type }
+
     stevotvr.groupsub.controller.acp:
         class: stevotvr\groupsub\controller\acp_base_controller
         abstract: true
@@ -164,6 +171,7 @@ services:
             - '@stevotvr.groupsub.operator.subscription'
             - '@template'
             - '@stevotvr.groupsub.operator.unit_helper'
+            - '@stevotvr.groupsub.operator.paypal_client'
             - '@user'
         calls:
             - method: set_path_info
@@ -181,8 +189,21 @@ services:
             - '@request'
             - '@stevotvr.groupsub.operator.package'
             - '@stevotvr.groupsub.operator.transaction'
+            - '@stevotvr.groupsub.operator.subscription'
             - '@stevotvr.groupsub.operator.paypal_client'
             - '@user'
+
+    stevotvr.groupsub.controller.webhook:
+        class: stevotvr\groupsub\controller\webhook_controller
+        arguments:
+            - '@config'
+            - '@language'
+            - '@stevotvr.groupsub.operator.paypal_client'
+            - '@stevotvr.groupsub.operator.subscription'
+            - '@stevotvr.groupsub.operator.package'
+            - '@stevotvr.groupsub.operator.transaction'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@notification_manager'
 
     stevotvr.groupsub.entity:
         class: stevotvr\groupsub\entity\entity

@@ -159,6 +159,26 @@ interface subscription_interface
 	public function get_conflict(entity $subscription);
 
 	/**
+	 * Create a recurring subscription for a user.
+	 *
+	 * @param term_entity $term
+	 * @param int         $user_id       The user ID
+	 * @param string      $paypal_sub_id The PayPal subscription ID
+	 *
+	 * @return int The subscription ID
+	 */
+	public function create_recurring_subscription(term_entity $term, $user_id, $paypal_sub_id);
+
+	/**
+	 * Get an active subscription by its PayPal subscription ID.
+	 *
+	 * @param string $paypal_sub_id The PayPal subscription ID
+	 *
+	 * @return entity|null The subscription entity or null if not found
+	 */
+	public function get_subscription_by_paypal_id($paypal_sub_id);
+
+	/**
 	 * Get a list of active subscriptions for a user.
 	 *
 	 * @param int $user_id The user ID

@@ -19,12 +19,14 @@ use stevotvr\groupsub\exception\unexpected_value;
 class term extends entity implements term_interface
 {
 	protected $columns = array(
-		'term_id'		=> 'integer',
-		'pkg_id'		=> 'integer',
-		'term_price'	=> 'set_price',
-		'term_currency'	=> 'set_currency',
-		'term_length'	=> 'set_length',
-		'term_order'	=> 'set_order',
+		'term_id'        => 'integer',
+		'pkg_id'         => 'integer',
+		'term_price'     => 'set_price',
+		'term_currency'  => 'set_currency',
+		'term_length'    => 'set_length',
+		'term_order'     => 'set_order',
+		'term_recurring' => 'set_recurring',
+		'paypal_plan_id' => 'set_paypal_plan_id',
 	);
 
 	protected $id_column = 'term_id';
@@ -167,6 +169,42 @@ class term extends entity implements term_interface
 		}
 
 		$this->data['term_order'] = $order;
+
+		return $this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function get_recurring()
+	{
+		return !empty($this->data['term_recurring']);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function set_recurring($recurring)
+	{
+		$this->data['term_recurring'] = (bool) $recurring;
+
+		return $this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function get_paypal_plan_id()
+	{
+		return isset($this->data['paypal_plan_id']) ? (string) $this->data['paypal_plan_id'] : '';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function set_paypal_plan_id($plan_id)
+	{
+		$this->data['paypal_plan_id'] = (string) $plan_id;
 
 		return $this;
 	}

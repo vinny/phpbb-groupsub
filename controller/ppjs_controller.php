@@ -18,6 +18,7 @@ use phpbb\user;
 use stevotvr\groupsub\operator\currency_interface;
 use stevotvr\groupsub\operator\package_interface;
 use stevotvr\groupsub\operator\paypal_client_interface;
+use stevotvr\groupsub\operator\subscription_interface;
 use stevotvr\groupsub\operator\transaction_interface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,6 +64,11 @@ class ppjs_controller
 	protected $trans_operator;
 
 	/**
+	 * @var subscription_interface
+	 */
+	protected $sub_operator;
+
+	/**
 	 * @var paypal_client_interface
 	 */
 	protected $paypal_client;
@@ -82,6 +88,7 @@ class ppjs_controller
 	 * @param request_interface       $request
 	 * @param package_interface       $pkg_operator
 	 * @param transaction_interface   $trans_operator
+	 * @param subscription_interface  $sub_operator
 	 * @param paypal_client_interface $paypal_client
 	 * @param user                    $user
 	 */
@@ -93,6 +100,7 @@ class ppjs_controller
 		request_interface $request,
 		package_interface $pkg_operator,
 		transaction_interface $trans_operator,
+		subscription_interface $sub_operator,
 		paypal_client_interface $paypal_client,
 		user $user
 	)
@@ -104,6 +112,7 @@ class ppjs_controller
 		$this->request = $request;
 		$this->pkg_operator = $pkg_operator;
 		$this->trans_operator = $trans_operator;
+		$this->sub_operator = $sub_operator;
 		$this->paypal_client = $paypal_client;
 		$this->user = $user;
 	}
@@ -134,6 +143,8 @@ class ppjs_controller
 				return $this->create();
 			case 'capture':
 				return $this->capture();
+			case 'subscribe':
+				return $this->subscribe();
 			default:
 				return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_INVALID_ACTION')), 404);
 		}
@@ -213,5 +224,58 @@ class ppjs_controller
 			'success' => $success,
 			'status'  => isset($response['status']) ? $response['status'] : '',
 		), $success ? 200 : 400);
+	}
+
+	/**
+	 * Activate a PayPal recurring subscription and assign usergroup.
+	 *
+	 * @return JsonResponse
+	 */
+	protected function subscribe()
+	{
+		$subscription_id = (string) $this->request->variable('subscription_id', '');
+		$term_id = (string) $this->request->variable('term_id', '');
+
+		if ($subscription_id === '' || $term_id === '')
+		{
+			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_MISSING_ORDER')), 400);
+		}
+
+		$term = $this->pkg_operator->get_package_term($term_id);
+		if (!$term)
+		{
+			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_INVALID_TERM')), 404);
+		}
+
+		$paypal_sub = $this->paypal_client->get_subscription($subscription_id);
+		if (!$paypal_sub || empty($paypal_sub['status']) || !in_array($paypal_sub['status'], array('ACTIVE', 'APPROVED')))
+		{
+			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_ORDER_CAPTURE')), 400);
+		}
+
+		$user_id = (int) $this->user->data['user_id'];
+		$sub_id = $this->sub_operator->create_recurring_subscription($term['term'], $user_id, $subscription_id);
+		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
+
+		$price = $term['term']->get_price();
+		$currency = $term['term']->get_currency();
+		$gross = $this->currency->format_value($currency, $price, false, false);
+		$payer_id = isset($paypal_sub['subscriber']['payer_id']) ? (string) $paypal_sub['subscriber']['payer_id'] : '';
+
+		$this->trans_operator->record_transaction(
+			$subscription_id,
+			$sandbox,
+			$price,
+			$currency,
+			$user_id,
+			$sub_id,
+			$gross,
+			$payer_id
+		);
+
+		return new JsonResponse(array(
+			'success' => true,
+			'status'  => $paypal_sub['status'],
+		), 200);
 	}
 }

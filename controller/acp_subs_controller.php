@@ -170,6 +170,7 @@ class acp_subs_controller extends acp_base_controller implements acp_subs_interf
 			$this->template->assign_block_vars('subscription', array(
 				'S_PACKAGE_DELETED'	=> $subscription['package']['deleted'],
 				'S_ACTIVE'			=> $subscription['entity']->is_active(),
+				'S_AUTO_RENEW'		=> $subscription['entity']->get_auto_renew() && $subscription['entity']->get_paypal_sub_id() !== '',
 
 				'USER'		=> get_username_string('full', $subscription['user_id'], $subscription['username'], $subscription['user_colour'], false, $profile_url),
 				'PACKAGE'	=> $subscription['package']['name'],

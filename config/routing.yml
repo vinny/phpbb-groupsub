@@ -2,6 +2,17 @@ stevotvr_groupsub_main:
     path: /groupsub/subs/{name}
     defaults: { _controller: stevotvr.groupsub.controller.main:handle, name: null }
 
+stevotvr_groupsub_cancel_renewal:
+    path: /groupsub/cancel/{pkg_id}
+    defaults: { _controller: stevotvr.groupsub.controller.main:cancel_renewal }
+    requirements:
+        pkg_id: \d+
+
 stevotvr_groupsub_ppjs:
     path: /groupsub/ppjs/{action}
     defaults: { _controller: stevotvr.groupsub.controller.ppjs:handle }
+
+stevotvr_groupsub_webhook:
+    path: /groupsub/webhook
+    defaults: { _controller: stevotvr.groupsub.controller.webhook:handle }
+    methods: [POST]

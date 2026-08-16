@@ -16,9 +16,9 @@
 <table class="table1 zebra-table responsive">
 	<thead>
 		<tr>
-{% if S_SHOW_USER %}
+		{% if S_SHOW_USER %}
 			<th width="20%">{{ lang('ACP_GROUPSUB_USER') }}</th>
-{% endif %}
+		{% endif %}
 			<th width="{% if S_SHOW_USER %}2{% else %}4{% endif %}0%">{{ lang('ACP_GROUPSUB_SUB') }}</th>
 			<th width="20%">{{ lang('ACP_GROUPSUB_START') }}</th>
 			<th width="20%">{{ lang('ACP_GROUPSUB_EXPIRES') }}</th>
@@ -29,23 +29,23 @@
 	<tbody>
 {% for s in subscription %}
 		<tr>
-	{% if S_SHOW_USER %}
+		{% if S_SHOW_USER %}
 			<td>{{ s.USER|raw }}</td>
-	{% endif %}
-			<td>{% if s.S_PACKAGE_DELETED %}<i>{{ s.PACKAGE }} ({{ lang('ACP_GROUPSUB_DELETED') }})</i>{% else %}{{ s.PACKAGE }}{% endif %}</td>
+		{% endif %}
+			<td>{% if s.S_PACKAGE_DELETED %}<i>{{ s.PACKAGE }} ({{ lang('ACP_GROUPSUB_DELETED') }})</i>{% else %}{{ s.PACKAGE }}{% endif %}{% if s.S_AUTO_RENEW %} <small style="color: #2e7d32; font-weight: bold;">({{ lang('ACP_GROUPSUB_AUTO_RENEWING') }})</small>{% endif %}</td>
 			<td>{{ s.STARTED }}</td>
-			<td>{% if s.EXPIRES %}{{ s.EXPIRES }}{% else %}<i>{{ lang('ACP_GROUPSUB_EXPIRES_NEVER') }}</i>{% endif %}</td>
+			<td>{% if s.EXPIRES %}{% if s.S_AUTO_RENEW %}<i>{{ lang('ACP_GROUPSUB_NEXT_BILLING', s.EXPIRES) }}</i>{% else %}{{ s.EXPIRES }}{% endif %}{% else %}<i>{{ lang('ACP_GROUPSUB_EXPIRES_NEVER') }}</i>{% endif %}</td>
 			<td>{% if s.S_ACTIVE %}<b style="color: #00d600;">{{ lang('ACP_GROUPSUB_ACTIVE') }}</b>{% else %}<i style="color: #f00;">{{ lang('ACP_GROUPSUB_ENDED') }}</i>{% endif %}</td>
 			<td class="actions">
 				<a href="{{ s.U_EDIT }}">{{ ICON_EDIT }}</a>
-	{% if not S_READ_ONLY and s.S_ACTIVE %}
+				{% if not S_READ_ONLY and s.S_ACTIVE %}
 				<a href="{{ s.U_DELETE }}" data-ajax="row_delete">{{ ICON_DELETE }}</a>
-	{% else %}
+				{% else %}
 				<a>{{ ICON_DELETE_DISABLED }}</a>
-	{% endif %}
+				{% endif %}
 			</td>
 		</tr>
-{% else %}
+		{% else %}
 		<tr><td colspan="{% if S_SHOW_USER %}6{% else %}5{% endif %}" style="text-align: center;">{{ lang('ACP_GROUPSUB_NO_SUBS') }}</td></tr>
 {% endfor %}
 	</tbody>
@@ -55,19 +55,19 @@
 	<fieldset class="display-options">
 		{{ lang('SORT_BY') ~ lang('COLON') }}
 		<select name="sk" id="sk">
-{% for k in sort_key %}
+		{% for k in sort_key %}
 			<option value="{{ k.KEY }}"{% if k.S_SELECTED %} selected{% endif %}>{{ k.NAME }}</option>
-{% endfor %}
+		{% endfor %}
 		</select>
 		<select name="sd" id="sd">
-{% for d in sort_dir %}
+		{% for d in sort_dir %}
 			<option value="{{ d.KEY }}"{% if d.S_SELECTED %} selected{% endif %}>{{ d.NAME }}</option>
-{% endfor %}
+		{% endfor %}
 		</select>
-{% if pagination %}
+		{% if pagination %}
 		{{ lang('ACP_GROUPSUB_ITEMS_PER_PAGE') ~ lang('COLON') }}
 		<input class="inputbox autowidth" type="number" name="limit" id="limit" min="0" max="100" value="{{ LIMIT }}">
-{% endif %}
+		{% endif %}
 		<input class="button2" type="submit" name="sort" value="{{ lang('GO') }}">
 	</fieldset>
 </form>

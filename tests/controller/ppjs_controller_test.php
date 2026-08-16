@@ -24,6 +24,7 @@ class ppjs_controller_test extends \phpbb_test_case
 	protected $request;
 	protected $pkg_operator;
 	protected $trans_operator;
+	protected $sub_operator;
 	protected $paypal_client;
 	protected $user;
 
@@ -65,6 +66,9 @@ class ppjs_controller_test extends \phpbb_test_case
 		$this->trans_operator = $this->getMockBuilder('\stevotvr\groupsub\operator\transaction_interface')
 			->getMock();
 
+		$this->sub_operator = $this->getMockBuilder('\stevotvr\groupsub\operator\subscription_interface')
+			->getMock();
+
 		$this->paypal_client = $this->getMockBuilder('\stevotvr\groupsub\operator\paypal_client_interface')
 			->getMock();
 
@@ -84,6 +88,7 @@ class ppjs_controller_test extends \phpbb_test_case
 			$this->request,
 			$this->pkg_operator,
 			$this->trans_operator,
+			$this->sub_operator,
 			$this->paypal_client,
 			$this->user
 		);

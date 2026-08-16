@@ -216,9 +216,65 @@ class package extends operator implements package_interface
 				WHERE pkg_id = ' . (int) $package_id;
 		$this->db->sql_query($sql);
 
+		$paypal_client = $this->container->get('stevotvr.groupsub.operator.paypal_client');
+		$currency_op = $this->container->get('stevotvr.groupsub.operator.currency');
+		$pkg = $this->container->get('stevotvr.groupsub.entity.package')->load($package_id);
+		$pkg_name = ($pkg && $pkg->get_name()) ? $pkg->get_name() : $this->language->lang('GROUPSUB_SUBSCRIPTION');
+
+		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
+		$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
+		$client_secret = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'] : '');
+		$has_credentials = ($client_id !== '' && $client_secret !== '');
+
+		if ($has_credentials)
+		{
+			$paypal_client->set_credentials($client_id, $client_secret, $sandbox);
+		}
+
 		$i = 0;
 		foreach ($terms as $entity)
 		{
+			if ($has_credentials && $entity->get_recurring() && (int) $entity->get_length() > 0)
+			{
+				$days = (int) $entity->get_length();
+				$interval_unit = 'DAY';
+				$interval_count = $days;
+				if ($days % 365 === 0)
+				{
+					$interval_unit = 'YEAR';
+					$interval_count = (int) ($days / 365);
+				}
+				else if ($days % 30 === 0)
+				{
+					$interval_unit = 'MONTH';
+					$interval_count = (int) ($days / 30);
+				}
+				else if ($days % 7 === 0)
+				{
+					$interval_unit = 'WEEK';
+					$interval_count = (int) ($days / 7);
+				}
+
+				$formatted_price = $currency_op->format_value($entity->get_currency(), $entity->get_price(), false, false);
+				$product = $paypal_client->create_product($pkg_name);
+				if ($product && !empty($product['id']))
+				{
+					$plan_name = $pkg_name . ' (' . $days . 'd)';
+					$plan = $paypal_client->create_plan(
+						$product['id'],
+						$plan_name,
+						$formatted_price,
+						$entity->get_currency(),
+						$interval_unit,
+						$interval_count
+					);
+					if ($plan && !empty($plan['id']))
+					{
+						$entity->set_paypal_plan_id($plan['id']);
+					}
+				}
+			}
+
 			$entity->set_package($package_id)->set_order($i++)->insert();
 		}
 	}

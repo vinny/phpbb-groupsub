@@ -21,6 +21,7 @@ use phpbb\template\template;
 use phpbb\user;
 use stevotvr\groupsub\operator\currency_interface;
 use stevotvr\groupsub\operator\package_interface;
+use stevotvr\groupsub\operator\paypal_client_interface;
 use stevotvr\groupsub\operator\subscription_interface;
 use stevotvr\groupsub\operator\unit_helper_interface;
 use Symfony\Component\HttpFoundation\Response;
@@ -86,6 +87,11 @@ class main_controller
 	protected $unit_helper;
 
 	/**
+	 * @var paypal_client_interface
+	 */
+	protected $paypal_client;
+
+	/**
 	 * @var user
 	 */
 	protected $user;
@@ -96,6 +102,7 @@ class main_controller
 	 * @var string
 	 */
 	protected $root_path;
+
 	/**
 	 * The script file extension.
 	 *
@@ -104,20 +111,37 @@ class main_controller
 	protected $php_ext;
 
 	/**
-	 * @param auth                   $auth
-	 * @param config                 $config
-	 * @param db_text                $config_text
-	 * @param currency_interface     $currency
-	 * @param helper                 $helper
-	 * @param language               $language
-	 * @param package_interface      $pkg_operator
-	 * @param request_interface      $request
-	 * @param subscription_interface $sub_operator
-	 * @param template               $template
-	 * @param unit_helper_interface  $unit_helper
-	 * @param user                   $user
+	 * Constructor.
+	 *
+	 * @param auth                    $auth
+	 * @param config                  $config
+	 * @param db_text                 $config_text
+	 * @param currency_interface      $currency
+	 * @param helper                  $helper
+	 * @param language                $language
+	 * @param package_interface       $pkg_operator
+	 * @param request_interface       $request
+	 * @param subscription_interface  $sub_operator
+	 * @param template                $template
+	 * @param unit_helper_interface   $unit_helper
+	 * @param paypal_client_interface $paypal_client
+	 * @param user                    $user
 	 */
-	public function __construct(auth $auth, config $config, db_text $config_text, currency_interface $currency, helper $helper, language $language, package_interface $pkg_operator, request_interface $request, subscription_interface $sub_operator, template $template, unit_helper_interface $unit_helper, user $user)
+	public function __construct(
+		auth $auth,
+		config $config,
+		db_text $config_text,
+		currency_interface $currency,
+		helper $helper,
+		language $language,
+		package_interface $pkg_operator,
+		request_interface $request,
+		subscription_interface $sub_operator,
+		template $template,
+		unit_helper_interface $unit_helper,
+		paypal_client_interface $paypal_client,
+		user $user
+	)
 	{
 		$this->auth = $auth;
 		$this->config = $config;
@@ -130,6 +154,7 @@ class main_controller
 		$this->sub_operator = $sub_operator;
 		$this->template = $template;
 		$this->unit_helper = $unit_helper;
+		$this->paypal_client = $paypal_client;
 		$this->user = $user;
 	}
 
@@ -146,7 +171,7 @@ class main_controller
 	}
 
 	/**
-	 * Handle the /groupsub/{name} route.
+	 * Handle the /groupsub[/{name}] route.
 	 *
 	 * @param string|null $name The unique identifier of a package
 	 *
@@ -194,6 +219,69 @@ class main_controller
 	}
 
 	/**
+	 * Cancel auto-renewal for a subscription.
+	 *
+	 * @param int $pkg_id The package ID
+	 *
+	 * @return Response
+	 */
+	public function cancel_renewal($pkg_id)
+	{
+		if ($this->user->data['user_id'] == ANONYMOUS)
+		{
+			redirect(append_sid($this->root_path . 'ucp.' . $this->php_ext, 'mode=login'));
+		}
+
+		$subscriptions = $this->sub_operator->get_user_subscriptions($this->user->data['user_id']);
+		if (!isset($subscriptions[$pkg_id]))
+		{
+			throw new http_exception(404, 'PAGE_NOT_FOUND');
+		}
+
+		$sub = $subscriptions[$pkg_id];
+		$paypal_sub_id = $sub->get_paypal_sub_id();
+
+		if ($this->request->is_set_post('cancel'))
+		{
+			redirect($this->helper->route('stevotvr_groupsub_main'));
+		}
+
+		if (confirm_box(true))
+		{
+			if ($paypal_sub_id !== '')
+			{
+				$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
+				$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
+				$client_secret = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'] : '');
+
+				if ($client_id !== '' && $client_secret !== '')
+				{
+					$this->paypal_client->set_credentials($client_id, $client_secret, $sandbox);
+					$this->paypal_client->cancel_subscription($paypal_sub_id, $this->language->lang('GROUPSUB_REASON_USER_CANCELLED'));
+				}
+			}
+
+			$sub->set_auto_renew(false)->save();
+
+			$expires_str = $sub->get_expire() ? $this->user->format_date($sub->get_expire()) : '';
+			$msg = $expires_str !== ''
+				? sprintf($this->language->lang('GROUPSUB_CANCEL_RENEWAL_SUCCESS_EXPIRES'), $expires_str)
+				: $this->language->lang('GROUPSUB_CANCEL_RENEWAL_SUCCESS');
+
+			trigger_error($msg . '<br><br>' . sprintf($this->language->lang('RETURN_PAGE'), '<a href="' . $this->helper->route('stevotvr_groupsub_main') . '">', '</a>'));
+		}
+		else
+		{
+			$expires_str = $sub->get_expire() ? $this->user->format_date($sub->get_expire()) : '';
+			$message = sprintf($this->language->lang('GROUPSUB_CANCEL_RENEWAL_CONFIRM'), $expires_str);
+
+			confirm_box(false, $message);
+		}
+
+		return $this->helper->render('@stevotvr_groupsub/package_list.html', $this->language->lang('GROUPSUB_PACKAGE_LIST'));
+	}
+
+	/**
 	 * Show the list of available packages.
 	 *
 	 * @param string|null $name The unique identifier of a package
@@ -212,7 +300,7 @@ class main_controller
 		$this->template->assign_var('COLLAPSE_TERMS', $this->config['stevotvr_groupsub_collapse_terms']);
 
 		$subscriptions = $this->sub_operator->get_user_subscriptions($this->user->data['user_id']);
-		$warn = $this->config['stevotvr_groupsub_warn_time'] * 86400;
+		$warn = (int) $this->config['stevotvr_groupsub_warn_time'] * 86400;
 
 		foreach ($packages as $package)
 		{
@@ -224,13 +312,15 @@ class main_controller
 
 			if (isset($subscriptions[$package['package']->get_id()]))
 			{
-				$expires = $subscriptions[$package['package']->get_id()]->get_expire();
+				$sub_entity = $subscriptions[$package['package']->get_id()];
+				$expires = $sub_entity->get_expire();
 
 				$vars = array_merge($vars, array(
-					'S_ACTIVE'	=> true,
-					'S_WARNING'	=> $expires && (($expires - time()) < $warn),
-
-					'EXPIRES'	=> $expires ? $this->user->format_date($expires) : 0,
+					'S_ACTIVE'			=> true,
+					'S_AUTO_RENEW'		=> $sub_entity->get_auto_renew() && $sub_entity->get_paypal_sub_id() !== '',
+					'S_WARNING'			=> $expires && (($expires - time()) < $warn),
+					'EXPIRES'			=> $expires ? $this->user->format_date($expires) : 0,
+					'U_CANCEL_RENEWAL'	=> $this->helper->route('stevotvr_groupsub_cancel_renewal', array('pkg_id' => $package['package']->get_id())),
 				));
 			}
 
@@ -239,9 +329,10 @@ class main_controller
 			foreach ($package['terms'] as $term)
 			{
 				$this->template->assign_block_vars('package.term', array(
-					'ID'		=> $term->get_id(),
-					'PRICE'		=> $this->currency->format_price($term->get_currency(), $term->get_price()),
-					'LENGTH'	=> $term->get_length() ? $this->unit_helper->get_formatted_timespan($term->get_length()) : 0,
+					'ID'			=> $term->get_id(),
+					'PRICE'			=> $this->currency->format_price($term->get_currency(), $term->get_price()),
+					'LENGTH'		=> $term->get_length() ? $this->unit_helper->get_formatted_timespan($term->get_length()) : 0,
+					'S_RECURRING'	=> $term->get_recurring(),
 				));
 			}
 		}
@@ -264,17 +355,32 @@ class main_controller
 			throw new http_exception(404, 'PAGE_NOT_FOUND');
 		}
 
-		$sandbox = $this->config['stevotvr_groupsub_pp_sandbox'];
-		$client_id = $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'];
-		$client_secret = $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'];
+		$is_recurring = $term['term']->get_recurring();
+		$plan_id = $term['term']->get_paypal_plan_id();
 
-		$u_ppsdk = sprintf('https://www.paypal.com/sdk/js?client-id=%s&locale=%s&currency=%s', $client_id, $this->language->lang('GROUPSUB_PP_LOCALE'), $term['term']->get_currency());
+		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
+		$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
+		$client_secret = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'] : '');
+
+		$sdk_extra = $is_recurring ? '&vault=true&intent=subscription' : '';
+		$u_ppsdk = sprintf(
+			'https://www.paypal.com/sdk/js?client-id=%s&locale=%s&currency=%s%s',
+			$client_id,
+			$this->language->lang('GROUPSUB_PP_LOCALE'),
+			$term['term']->get_currency(),
+			$sdk_extra
+		);
+
 		$u_create = $this->helper->route('stevotvr_groupsub_ppjs', array('action' => 'create'));
 		$u_capture = $this->helper->route('stevotvr_groupsub_ppjs', array('action' => 'capture'));
+		$u_subscribe = $this->helper->route('stevotvr_groupsub_ppjs', array('action' => 'subscribe'));
 
 		$paypal_config = json_encode(array(
 			'u_create'			=> $u_create,
 			'u_capture'			=> $u_capture,
+			'u_subscribe'		=> $u_subscribe,
+			'is_recurring'		=> (bool) $is_recurring,
+			'plan_id'			=> (string) $plan_id,
 			'term_id'			=> $term['term']->get_id(),
 			'lang_error'		=> $this->language->lang('GROUPSUB_PAYMENT_ERROR'),
 			'lang_cancelled'	=> $this->language->lang('GROUPSUB_PAYMENT_CANCELLED'),
@@ -282,6 +388,7 @@ class main_controller
 
 		$this->template->assign_vars(array(
 			'PP_ENABLED'	=> !empty($client_id) && !empty($client_secret),
+			'S_RECURRING'	=> (bool) $is_recurring,
 
 			'PKG_NAME'		=> $term['package']->get_name(),
 			'PKG_DESC'		=> $term['package']->get_desc_for_display(),

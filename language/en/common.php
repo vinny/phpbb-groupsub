@@ -56,6 +56,19 @@ $lang = array_merge($lang, array(
 	'GROUPSUB_PAYMENT_ERROR'		=> 'There was an error processing your payment. Please try again.',
 	'GROUPSUB_PAYMENT_CANCELLED'	=> 'Payment was cancelled.',
 
+	'GROUPSUB_ONE_TIME'				=> 'One-time',
+	'GROUPSUB_RECURRING'			=> 'Auto-renewing',
+	'GROUPSUB_RENEWAL'				=> 'Renewal',
+	'GROUPSUB_RENEWAL_AUTO'			=> 'Auto-renewing subscription',
+	'GROUPSUB_RENEWAL_AUTO_EXPLAIN'	=> 'This subscription renews automatically at the end of each billing period until cancelled.',
+	'GROUPSUB_AUTO_RENEW_ACTIVE'	=> 'Auto-renewal is active',
+	'GROUPSUB_AUTO_RENEW_NEXT'		=> 'Auto-renewal active (next billing: %s)',
+	'GROUPSUB_CANCEL_AUTO_RENEW'	=> 'Cancel auto-renewal',
+	'GROUPSUB_CANCEL_RENEWAL_TITLE'	=> 'Cancel subscription auto-renewal',
+	'GROUPSUB_CANCEL_RENEWAL_CONFIRM' => 'Are you sure you want to cancel the auto-renewal for this subscription? Future payments will stop immediately, and your access will remain active until %s.',
+	'GROUPSUB_CANCEL_RENEWAL_SUCCESS' => 'Auto-renewal has been cancelled. No further charges will be made.',
+	'GROUPSUB_CANCEL_RENEWAL_SUCCESS_EXPIRES' => 'Auto-renewal has been cancelled. Your subscription will remain active until %s.',
+
 	'GROUPSUB_RETURN_MESSAGE'		=> 'You are now subscribed to <strong>%1$s</strong> for %2$s.',
 
 	'GROUPSUB_ERROR_PP_CREDENTIALS'	=> 'PayPal credentials are not configured.',
@@ -64,7 +77,12 @@ $lang = array_merge($lang, array(
 	'GROUPSUB_ERROR_ORDER_CREATION'	=> 'Failed to create the PayPal order.',
 	'GROUPSUB_ERROR_MISSING_ORDER'	=> 'Missing order ID.',
 	'GROUPSUB_ERROR_ORDER_CAPTURE'	=> 'Failed to capture the PayPal order.',
+	'GROUPSUB_ERROR_EMPTY_BODY'		=> 'Empty request body.',
+	'GROUPSUB_ERROR_INVALID_WEBHOOK_SIG' => 'Invalid webhook signature.',
+	'GROUPSUB_ERROR_INVALID_JSON_EVENT'  => 'Invalid JSON event.',
+	'GROUPSUB_REASON_USER_CANCELLED' => 'Cancelled by subscriber via forum.',
 
+	// PayPal supported locale codes: https://developer.paypal.com/reference/locale-codes/
 	'GROUPSUB_PP_LOCALE'			=> 'en_US',
 
 	'GROUPSUB_DECIMAL_SEPARATOR'	=> '.',

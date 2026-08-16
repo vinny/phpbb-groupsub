@@ -360,6 +360,78 @@ class subscription extends operator implements subscription_interface
 	/**
 	 * @inheritDoc
 	 */
+	public function create_recurring_subscription(term_entity $term, $user_id, $paypal_sub_id)
+	{
+		$length = (int) $term->get_length() * 86400;
+
+		$sql_ary = array(
+			'SELECT'	=> 's.sub_id, s.sub_expires',
+			'FROM'		=> array($this->sub_table => 's'),
+			'WHERE'		=> 's.sub_active = 1
+								AND s.user_id = ' . (int) $user_id . '
+								AND s.pkg_id = ' . (int) $term->get_package(),
+		);
+		$sql = $this->db->sql_build_query('SELECT', $sql_ary);
+		$this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow();
+		$this->db->sql_freeresult();
+
+		if ($row)
+		{
+			$expire = max(time(), (int) $row['sub_expires']) + $length;
+			$sql = 'UPDATE ' . $this->sub_table . '
+					SET sub_expires = ' . (int) $expire . ",
+						paypal_sub_id = '" . $this->db->sql_escape($paypal_sub_id) . "',
+						sub_auto_renew = 1,
+						sub_warned = 0
+					WHERE sub_id = " . (int) $row['sub_id'];
+			$this->db->sql_query($sql);
+
+			$this->notification_manager->delete_notifications(array(
+				'stevotvr.groupsub.notification.type.warn',
+				'stevotvr.groupsub.notification.type.expired',
+			), (int) $row['sub_id']);
+
+			$this->execute_actions($user_id, $term->get_package());
+
+			return (int) $row['sub_id'];
+		}
+
+		$subscription = $this->container->get('stevotvr.groupsub.entity.subscription')
+							->set_package($term->get_package())
+							->set_user((int) $user_id)
+							->set_start(time())
+							->set_expire($length > 0 ? time() + $length : 0)
+							->set_paypal_sub_id($paypal_sub_id)
+							->set_auto_renew(true);
+
+		return $this->add_subscription($subscription);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function get_subscription_by_paypal_id($paypal_sub_id)
+	{
+		$sql = 'SELECT *
+				FROM ' . $this->sub_table . "
+				WHERE paypal_sub_id = '" . $this->db->sql_escape($paypal_sub_id) . "'
+					AND sub_active = 1";
+		$this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow();
+		$this->db->sql_freeresult();
+
+		if (!$row)
+		{
+			return null;
+		}
+
+		return $this->container->get('stevotvr.groupsub.entity.subscription')->import($row);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function start_subscription($sub_id)
 	{
 		$subscription = $this->container->get('stevotvr.groupsub.entity.subscription')->load($sub_id);

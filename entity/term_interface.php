@@ -87,4 +87,28 @@ interface term_interface extends entity_interface
 	 * @throws out_of_bounds
 	 */
 	public function set_order($order);
+
+	/**
+	 * @return bool Whether this term is a recurring subscription
+	 */
+	public function get_recurring();
+
+	/**
+	 * @param bool $recurring Whether this term is a recurring subscription
+	 *
+	 * @return term_interface This object for chaining
+	 */
+	public function set_recurring($recurring);
+
+	/**
+	 * @return string The PayPal Billing Plan ID associated with this term
+	 */
+	public function get_paypal_plan_id();
+
+	/**
+	 * @param string $plan_id The PayPal Billing Plan ID
+	 *
+	 * @return term_interface This object for chaining
+	 */
+	public function set_paypal_plan_id($plan_id);
 }

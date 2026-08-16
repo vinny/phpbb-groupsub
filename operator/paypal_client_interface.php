@@ -27,6 +27,13 @@ interface paypal_client_interface
 	public function set_credentials($client_id, $client_secret, $sandbox = false);
 
 	/**
+	 * Get the PayPal API base URL for current environment.
+	 *
+	 * @return string
+	 */
+	public function get_base_url();
+
+	/**
 	 * Get an OAuth2 access token from PayPal.
 	 *
 	 * @return string|null The access token, or null on failure
@@ -59,4 +66,67 @@ interface paypal_client_interface
 	 * @return array|null The order details array, or null on failure
 	 */
 	public function get_order($order_id);
+
+	/**
+	 * Create a product in the PayPal Catalog.
+	 *
+	 * @param string $name        Product name
+	 * @param string $description Product description
+	 *
+	 * @return array|null The response array, or null on failure
+	 */
+	public function create_product($name, $description = '');
+
+	/**
+	 * Create a recurring billing plan in PayPal.
+	 *
+	 * @param string $product_id     PayPal Product ID
+	 * @param string $name           Plan name
+	 * @param string $amount         Formatted price amount (e.g. "10.00")
+	 * @param string $currency       ISO-4217 Currency Code
+	 * @param string $interval_unit  Interval unit (DAY, WEEK, MONTH, YEAR)
+	 * @param int    $interval_count Number of intervals
+	 *
+	 * @return array|null The response array, or null on failure
+	 */
+	public function create_plan($product_id, $name, $amount, $currency, $interval_unit, $interval_count = 1);
+
+	/**
+	 * Deactivate a billing plan in PayPal.
+	 *
+	 * @param string $plan_id The PayPal Plan ID
+	 *
+	 * @return bool True on success
+	 */
+	public function deactivate_plan($plan_id);
+
+	/**
+	 * Get details of a subscription via PayPal Subscriptions API.
+	 *
+	 * @param string $subscription_id The PayPal Subscription ID
+	 *
+	 * @return array|null The response array, or null on failure
+	 */
+	public function get_subscription($subscription_id);
+
+	/**
+	 * Cancel a subscription via PayPal Subscriptions API.
+	 *
+	 * @param string $subscription_id The PayPal Subscription ID
+	 * @param string $reason          Optional cancellation reason
+	 *
+	 * @return bool True on success
+	 */
+	public function cancel_subscription($subscription_id, $reason = '');
+
+	/**
+	 * Verify a webhook notification signature with PayPal.
+	 *
+	 * @param array  $headers    Incoming request headers
+	 * @param string $raw_body   Raw request payload string
+	 * @param string $webhook_id PayPal Webhook ID configured in ACP
+	 *
+	 * @return bool True if authentic and verified, false otherwise
+	 */
+	public function verify_webhook_signature(array $headers, $raw_body, $webhook_id);
 }

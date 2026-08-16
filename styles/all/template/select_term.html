@@ -36,6 +36,10 @@
 							<dd>{{ TERM_PRICE }}</dd>
 							<dt>{{ lang('GROUPSUB_LENGTH') ~ lang('COLON') }}</dt>
 							<dd>{% if TERM_LENGTH %}{{ TERM_LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</dd>
+							{% if S_RECURRING %}
+							<dt>{{ lang('GROUPSUB_RENEWAL') ~ lang('COLON') }}</dt>
+							<dd><strong style="color: #2e7d32;">{{ lang('GROUPSUB_RENEWAL_AUTO') }}</strong><br><span style="font-size: 0.9em; color: #666;">{{ lang('GROUPSUB_RENEWAL_AUTO_EXPLAIN') }}</span></dd>
+							{% endif %}
 						</dl>
 					</div>
 				</div>

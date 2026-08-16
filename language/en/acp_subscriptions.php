@@ -69,6 +69,8 @@ $lang = array_merge($lang, array(
 	'ACP_GROUPSUB_ENDED'			=> 'Ended',
 	'ACP_GROUPSUB_ALL_PACKAGES'		=> 'All subscription packages',
 	'ACP_GROUPSUB_DELETED'			=> 'deleted',
+	'ACP_GROUPSUB_AUTO_RENEWING'	=> 'Auto-renewing',
+	'ACP_GROUPSUB_NEXT_BILLING'		=> 'next billing: %s',
 
 	'ACP_GROUPSUB_ERROR_NO_PKGS'		=> 'There are no packages for which to create a subscription.',
 	'ACP_GROUPSUB_ERROR_DATE_IN_PAST'	=> 'The expiration date entered was in the past.',

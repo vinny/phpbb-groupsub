@@ -3,7 +3,17 @@
 ## 2.0.0-dev
 
 * Raised minimum requirements to PHP 8.2+ and phpBB 3.3.0+
-* Replaced deprecated `paypal/paypal-checkout-sdk` with a lightweight, native PayPal REST API v2 client
+* Replaced deprecated `paypal/paypal-checkout-sdk` with a lightweight, native PayPal REST API client
+* Added support for auto-renewing recurring subscriptions using PayPal Subscriptions REST API
+* Added automatic PayPal Catalog Products and Billing Plans creation when recurring terms are configured in ACP
+* Added PayPal Webhooks endpoint with cryptographic signature verification
+* Handled recurring payment renewals (`PAYMENT.SALE.COMPLETED`) with automatic expiration extensions and transaction recording
+* Handled subscriber self-service cancellation via forum with CSRF confirmation flow
+* Handled webhook events for subscription cancellation, suspension, and expiration
+* Added renewed notification type (`stevotvr.groupsub.notification.type.renewed`) and email template for automatic renewals
+* Added next billing date indicator on frontend active subscription badges and ACP subscriptions list
+* Added `(Auto-renewing)` indicator to packages and subscriptions in ACP
+* Standardized webhook event instructions in ACP to match PayPal developer dashboard
 * Added native OAuth2 token caching for PayPal REST requests
 * Updated PayPal frontend JavaScript with loading indicators, error handling, cancellation feedback, and responsive button styling
 * Modernized codebase with PHP 8.2 typed properties and match expressions

@@ -18,12 +18,14 @@ use stevotvr\groupsub\exception\out_of_bounds;
 class subscription extends entity implements subscription_interface
 {
 	protected $columns = array(
-		'sub_id'		=> 'integer',
-		'pkg_id'		=> 'integer',
-		'user_id'		=> 'integer',
-		'sub_active'	=> 'boolean',
-		'sub_start'		=> 'set_start',
-		'sub_expires'	=> 'set_expire',
+		'sub_id'         => 'integer',
+		'pkg_id'         => 'integer',
+		'user_id'        => 'integer',
+		'sub_active'     => 'boolean',
+		'sub_start'      => 'set_start',
+		'sub_expires'    => 'set_expire',
+		'paypal_sub_id'  => 'set_paypal_sub_id',
+		'sub_auto_renew' => 'set_auto_renew',
 	);
 
 	protected $id_column = 'sub_id';
@@ -132,6 +134,42 @@ class subscription extends entity implements subscription_interface
 		}
 
 		$this->data['sub_expires'] = $expire;
+
+		return $this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function get_paypal_sub_id()
+	{
+		return isset($this->data['paypal_sub_id']) ? (string) $this->data['paypal_sub_id'] : '';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function set_paypal_sub_id($paypal_sub_id)
+	{
+		$this->data['paypal_sub_id'] = (string) $paypal_sub_id;
+
+		return $this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function get_auto_renew()
+	{
+		return !empty($this->data['sub_auto_renew']);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function set_auto_renew($auto_renew)
+	{
+		$this->data['sub_auto_renew'] = (bool) $auto_renew;
 
 		return $this;
 	}

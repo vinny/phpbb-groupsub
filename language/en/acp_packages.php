@@ -68,12 +68,16 @@ $lang = array_merge($lang, array(
 	'ACP_GROUPSUB_PKG_PRICE_EXPLAIN'			=> 'Enter the price for the subscription.',
 	'ACP_GROUPSUB_PKG_LENGTH'					=> 'Subscription length',
 	'ACP_GROUPSUB_PKG_LENGTH_EXPLAIN'			=> 'Enter the length of the subscription. Enter 0 for a never-ending subscription.',
+	'ACP_GROUPSUB_PKG_RECURRING'				=> 'Recurring billing',
+	'ACP_GROUPSUB_PKG_RECURRING_EXPLAIN'		=> 'Automatically renew and bill the subscriber at the end of each billing cycle until cancelled. Requires a valid PayPal Webhook configured.',
 
-	'ACP_GROUPSUB_NAME'		=> 'Name',
-	'ACP_GROUPSUB_TERMS'	=> 'Terms',
-	'ACP_GROUPSUB_PRICE'	=> 'Price',
-	'ACP_GROUPSUB_LENGTH'	=> 'Length',
-	'ACP_GROUPSUB_MORE'		=> '+%d more…',
+	'ACP_GROUPSUB_NAME'			=> 'Name',
+	'ACP_GROUPSUB_TERMS'		=> 'Terms',
+	'ACP_GROUPSUB_PRICE'		=> 'Price',
+	'ACP_GROUPSUB_LENGTH'		=> 'Length',
+	'ACP_GROUPSUB_RECURRING'		=> 'Recurring',
+	'ACP_GROUPSUB_AUTO_RENEWING'	=> 'Auto-renewing',
+	'ACP_GROUPSUB_MORE'				=> '+%d more…',
 
 	'ACP_GROUPSUB_EXPIRES_UNLIMITED'	=> 'Unlimited',
 
