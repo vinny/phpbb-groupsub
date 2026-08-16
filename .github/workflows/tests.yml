@@ -18,6 +18,7 @@ jobs:
     uses: phpbb-extensions/test-framework/.github/workflows/tests.yml@3.3.x
     with:
       EXTNAME: stevotvr/groupsub
+      PHP_VERSIONS: '["8.2", "8.3", "8.4"]'
 
   frontend-lint:
     name: Frontend JS & CSS Lint
