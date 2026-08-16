@@ -134,7 +134,7 @@ class currency_test extends \phpbb_test_case
 	public function test_format_price()
 	{
 		$price_usd = $this->currency_operator->format_price('USD', 1500);
-		$this->assertEquals('$&nbsp;15.00 USD', $price_usd);
+		$this->assertEquals('$15.00&nbsp;USD', $price_usd);
 
 		$price_eur = $this->currency_operator->format_price('EUR', 2000);
 		$this->assertEquals('20.00€&nbsp;EUR', $price_eur);

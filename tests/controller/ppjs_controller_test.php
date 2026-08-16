@@ -35,6 +35,10 @@ class ppjs_controller_test extends \phpbb_test_case
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->config->expects($this->any())
+			->method('offsetExists')
+			->willReturn(true);
+
 		$this->currency = $this->getMockBuilder('\stevotvr\groupsub\operator\currency_interface')
 			->getMock();
 

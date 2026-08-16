@@ -24,14 +24,14 @@ interface paypal_client_interface
 	 *
 	 * @return self
 	 */
-	public function set_credentials(string $client_id, string $client_secret, bool $sandbox = false): self;
+	public function set_credentials($client_id, $client_secret, $sandbox = false);
 
 	/**
 	 * Get an OAuth2 access token from PayPal.
 	 *
 	 * @return string|null The access token, or null on failure
 	 */
-	public function get_access_token(): ?string;
+	public function get_access_token();
 
 	/**
 	 * Create an order via PayPal Orders v2 API.
@@ -40,7 +40,7 @@ interface paypal_client_interface
 	 *
 	 * @return array|null The response array, or null on failure
 	 */
-	public function create_order(array $payload): ?array;
+	public function create_order(array $payload);
 
 	/**
 	 * Capture an authorized order via PayPal Orders v2 API.
@@ -49,7 +49,7 @@ interface paypal_client_interface
 	 *
 	 * @return array|null The response array, or null on failure
 	 */
-	public function capture_order(string $order_id): ?array;
+	public function capture_order($order_id);
 
 	/**
 	 * Get details of an order via PayPal Orders v2 API.
@@ -58,5 +58,5 @@ interface paypal_client_interface
 	 *
 	 * @return array|null The order details array, or null on failure
 	 */
-	public function get_order(string $order_id): ?array;
+	public function get_order($order_id);
 }
