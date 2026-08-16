@@ -49,7 +49,7 @@
 		</dl>
 		<dl>
 			<dt><label for="header">{{ lang('ACP_GROUPSUB_HEADER') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_HEADER_EXPLAIN') }}</span></dt>
-			<dd><textarea id="header" name="header" rows="5" cols="45" data-bbcode="true">{{ HEADER }}</textarea></dd>
+			<dd><textarea id="header" name="header" rows="5" cols="45">{{ HEADER }}</textarea></dd>
 			<dd>
 				<label><input type="checkbox" class="radio" name="header_bbcode"{% if S_HEADER_BBCODE_CHECKED %} checked{% endif %}> {{ lang('PARSE_BBCODE') }}</label>
 				<label><input type="checkbox" class="radio" name="header_smilies"{% if S_HEADER_SMILIES_CHECKED %} checked{% endif %}> {{ lang('PARSE_SMILIES') }}</label>
@@ -58,7 +58,7 @@
 		</dl>
 		<dl>
 			<dt><label for="footer">{{ lang('ACP_GROUPSUB_FOOTER') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_FOOTER_EXPLAIN') }}</span></dt>
-			<dd><textarea id="footer" name="footer" rows="5" cols="45" data-bbcode="true">{{ FOOTER }}</textarea></dd>
+			<dd><textarea id="footer" name="footer" rows="5" cols="45">{{ FOOTER }}</textarea></dd>
 			<dd>
 				<label><input type="checkbox" class="radio" name="footer_bbcode"{% if S_FOOTER_BBCODE_CHECKED %} checked{% endif %}> {{ lang('PARSE_BBCODE') }}</label>
 				<label><input type="checkbox" class="radio" name="footer_smilies"{% if S_FOOTER_SMILIES_CHECKED %} checked{% endif %}> {{ lang('PARSE_SMILIES') }}</label>
@@ -84,11 +84,11 @@
 		</dl>
 		<dl>
 			<dt><label for="warn_time">{{ lang('ACP_GROUPSUB_WARN_TIME') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_WARN_TIME_EXPLAIN') }}</span></dt>
-			<dd><input class="text" type="number" id="warn_time" name="warn_time" size="4" min="0" value="{{ WARN_TIME }}">&nbsp;{{ lang('GROUPSUB_DAYS') }}</dd>
+			<dd><input class="text" type="number" id="warn_time" name="warn_time" size="4" min="0" value="{{ WARN_TIME }}">&nbsp;{{ lang('DAYS') }}</dd>
 		</dl>
 		<dl>
 			<dt><label for="grace">{{ lang('ACP_GROUPSUB_GRACE') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_GRACE_EXPLAIN') }}</span></dt>
-			<dd><input class="text" type="number" id="grace" name="grace" size="4" min="0" value="{{ GRACE }}">&nbsp;{{ lang('GROUPSUB_DAYS') }}</dd>
+			<dd><input class="text" type="number" id="grace" name="grace" size="4" min="0" value="{{ GRACE }}">&nbsp;{{ lang('DAYS') }}</dd>
 		</dl>
 	</fieldset>
 	<fieldset class="submit-buttons">

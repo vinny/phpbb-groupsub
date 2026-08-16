@@ -38,10 +38,10 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-	'ACL_CAT_GROUPSUB'			=> 'Group Subscription',
-	'ACL_A_GROUPSUB_SETTINGS'			=> 'Can alter Group Subscription settings',
-	'ACL_A_GROUPSUB_PACKAGES'			=> 'Can create or alter subscription packages',
+	'ACL_CAT_GROUPSUB'					=> 'Group Subscription',
+	'ACL_A_GROUPSUB_SETTINGS'			=> 'Can manage Group Subscription settings',
+	'ACL_A_GROUPSUB_PACKAGES'			=> 'Can create and edit subscription packages',
 	'ACL_A_GROUPSUB_SUBSCRIPTIONS'		=> 'Can view users’ subscriptions',
-	'ACL_A_GROUPSUB_SUBSCRIPTIONS_EDIT'	=> 'Can alter or cancel users’ subscriptions',
+	'ACL_A_GROUPSUB_SUBSCRIPTIONS_EDIT'	=> 'Can edit and cancel users’ subscriptions',
 	'ACL_A_GROUPSUB_TRANSACTIONS'		=> 'Can view PayPal transactions',
 ));

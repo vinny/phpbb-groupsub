@@ -1,0 +1,15 @@
+{
+  "name": "stevotvr-groupsub",
+  "version": "2.0.0-dev",
+  "description": "Group Subscription Extension for phpBB - CSS and JS Linting",
+  "scripts": {
+    "test": "npm run lint:js && npm run lint:css",
+    "lint:js": "npx --no-install eslint \"adm/style/**/*.js\" \"styles/**/*.js\"",
+    "lint:css": "npx --no-install stylelint \"adm/style/**/*.css\" \"styles/**/*.css\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "stylelint": "^15.11.0",
+    "stylelint-config-standard": "^34.0.0"
+  }
+}

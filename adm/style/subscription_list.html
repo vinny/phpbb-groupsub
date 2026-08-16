@@ -30,7 +30,7 @@
 {% for s in subscription %}
 		<tr>
 	{% if S_SHOW_USER %}
-			<td>{{ s.USER }}</td>
+			<td>{{ s.USER|raw }}</td>
 	{% endif %}
 			<td>{% if s.S_PACKAGE_DELETED %}<i>{{ s.PACKAGE }} ({{ lang('ACP_GROUPSUB_DELETED') }})</i>{% else %}{{ s.PACKAGE }}{% endif %}</td>
 			<td>{{ s.STARTED }}</td>

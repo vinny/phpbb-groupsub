@@ -38,7 +38,7 @@
 	{% if S_SHOW_USER %}
 		<dl>
 			<dt>{{ lang('ACP_GROUPSUB_SUB_USER') ~ lang('COLON') }}</dt>
-			<dd>{{ SUB_USER }}</dd>
+			<dd>{{ SUB_USER|raw }}</dd>
 		</dl>
 	{% endif %}
 		<dl>
@@ -80,5 +80,5 @@
 	</fieldset>
 {% endif %}
 </form>
-<script>var terms = {{ TERMS_JSON }};</script>
+<script>var terms = {{ TERMS_JSON|raw }};</script>
 {% INCLUDEJS '@stevotvr_groupsub/edit_subscription.js' %}

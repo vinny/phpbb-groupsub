@@ -3,124 +3,84 @@
 <h2>{{ lang('GROUPSUB_PACKAGE_LIST') }}</h2>
 
 {% if HEADER %}
-
 <div class="panel bg2">
-
-<div class="inner">
-
-	<div class="postbody">
-
-	<div class="content">{{ HEADER }}</div>
-
+	<div class="inner">
+		<div class="postbody">
+			<div class="content">{{ HEADER|raw }}</div>
+		</div>
 	</div>
-
 </div>
-
-</div>
-
 {% endif %}
 
-{% for p in package %}
-
+{% for p in loops.package %}
 <div class="panel bg{% if loop.index is odd %}1{% else %}2{% endif %}">
+	<div class="inner">
+		<h3>{{ p.NAME }}</h3>
 
-<div class="inner">
-
-	<h3>{{ p.NAME }}</h3>
-
-    <div class="column1">
-
-	    <div class="postbody">
-
-	    <div class="content">
-
-            {% if p.DESC %}{{ p.DESC }}{% else %}<i>{{ lang('GROUPSUB_NO_DESC') }}</i>{% endif %}
-
-	    </div>
-
-	    </div>
-
-    </div>
-
-	<div class="column2">
-
-        <div class="panel bg3">
-
-		<div class="inner">
-
-			<h4>{{ lang('GROUPSUB_CHOOSE_TERM', p.NAME) }}</h4>
-
-			<form action="{{ U_ACTION }}" method="post">
-				<fieldset>
-	{% if p.term|length == 1 %}
-		{% for t in p.term %}
-					<input type="hidden" name="term_id" value="{{ t.ID }}">
-					<p>{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</p>
-		{% endfor %}
-	{% elseif p.term|length > COLLAPSE_TERMS %}
-					<p>
-						<select name="term_id">
-		{% for t in p.term %}
-							<option value="{{ t.ID }}">{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}{% endif %}</option>
-		{% endfor %}
-						</select>
-					</p>
-	{% else %}
-					<p>
-		{% for t in p.term %}
-						<label><input type="radio" name="term_id" value="{{ t.ID }}">{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</label><br>
-		{% endfor %}
-					</p>
-	{% endif %}
-	{% if p.S_ACTIVE %}
-					<p{% if p.S_WARNING %} style="color: #f00"{% endif %}>{% if p.EXPIRES %}{{ lang('GROUPSUB_SUBSCRIBED_UNTIL', p.EXPIRES) }}{% else %}{{ lang('GROUPSUB_SUBSCRIBED') }}{% endif %}</p>
-					{% if p.EXPIRES %}<input class="button1" type="submit" name="submit" value="{{ lang('GROUPSUB_RENEW') }}">{% endif %}
-	{% else %}
-					<input class="button1" type="submit" name="submit" value="{{ lang('GROUPSUB_SUBSCRIBE') }}">
-	{% endif %}
-				</fieldset>
-			</form>
-
+		<div class="column1">
+			<div class="postbody">
+				<div class="content">
+					{% if p.DESC %}{{ p.DESC|raw }}{% else %}<i>{{ lang('GROUPSUB_NO_DESC') }}</i>{% endif %}
+				</div>
+			</div>
 		</div>
 
-		</div>
+		<div class="column2">
+			<div class="panel bg3">
+				<div class="inner">
+					<h4>{{ lang('GROUPSUB_CHOOSE_TERM', p.NAME) }}</h4>
 
+					<form action="{{ U_ACTION }}" method="post">
+						<fieldset>
+							{% if p.term|length == 1 %}
+								{% for t in p.term %}
+									<input type="hidden" name="term_id" value="{{ t.ID }}">
+									<p>{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</p>
+								{% endfor %}
+							{% elseif p.term|length > COLLAPSE_TERMS %}
+								<p>
+									<select name="term_id">
+										{% for t in p.term %}
+											<option value="{{ t.ID }}">{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}{% endif %}</option>
+										{% endfor %}
+									</select>
+								</p>
+							{% else %}
+								<p>
+									{% for t in p.term %}
+										<label><input type="radio" name="term_id" value="{{ t.ID }}">{{ t.PRICE }} / {% if t.LENGTH %}{{ t.LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</label><br>
+									{% endfor %}
+								</p>
+							{% endif %}
+							{% if p.S_ACTIVE %}
+								<p{% if p.S_WARNING %} style="color: #f00"{% endif %}>{% if p.EXPIRES %}{{ lang('GROUPSUB_SUBSCRIBED_UNTIL', p.EXPIRES) }}{% else %}{{ lang('GROUPSUB_SUBSCRIBED') }}{% endif %}</p>
+								{% if p.EXPIRES %}<input class="button1" type="submit" name="submit" value="{{ lang('GROUPSUB_RENEW') }}">{% endif %}
+							{% else %}
+								<input class="button1" type="submit" name="submit" value="{{ lang('GROUPSUB_SUBSCRIBE') }}">
+							{% endif %}
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
-
 </div>
-
-</div>
-
 {% else %}
-
 <div class="panel bg1">
-
-<div class="inner">
-
-	<p>{{ lang('GROUPSUB_NO_PACKAGES') }}</p>
-
+	<div class="inner">
+		<p>{{ lang('GROUPSUB_NO_PACKAGES') }}</p>
+	</div>
 </div>
-
-</div>
-
 {% endfor %}
 
 {% if FOOTER %}
-
 <div class="panel bg2">
-
-<div class="inner">
-
-	<div class="postbody">
-
-	<div class="content">{{ FOOTER }}</div>
-
+	<div class="inner">
+		<div class="postbody">
+			<div class="content">{{ FOOTER|raw }}</div>
+		</div>
 	</div>
-
 </div>
-
-</div>
-
 {% endif %}
 
 {% include 'overall_footer.html' %}

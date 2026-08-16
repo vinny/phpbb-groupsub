@@ -10,7 +10,6 @@
 
 namespace stevotvr\groupsub\operator;
 
-use PayPalHttp\HttpResponse;
 use phpbb\event\dispatcher_interface;
 use phpbb\log\log_interface;
 use stevotvr\groupsub\operator\currency_interface;
@@ -76,19 +75,20 @@ class transaction extends operator implements transaction_interface
 	/**
 	 * @inheritDoc
 	 */
-	public function process_transaction(HttpResponse $response, $sandbox)
+	public function process_transaction(array $order_data, $sandbox)
 	{
-		if ($response->statusCode !== 201)
+		if (empty($order_data['status']) || $order_data['status'] !== self::STATUS_COMPLETED)
 		{
 			return false;
 		}
 
-		if ($response->result->status !== self::STATUS_COMPLETED)
+		$purchase_unit = $order_data['purchase_units'][0] ?? null;
+		if (!$purchase_unit)
 		{
 			return false;
 		}
 
-		$term_id = $response->result->purchase_units[0]->reference_id;
+		$term_id = (string) ($purchase_unit['reference_id'] ?? '');
 		$term = $this->container->get('stevotvr.groupsub.entity.term')->load($term_id);
 		if (!$term)
 		{
@@ -96,20 +96,31 @@ class transaction extends operator implements transaction_interface
 			return false;
 		}
 
-		$currency = $response->result->purchase_units[0]->payments->captures[0]->amount->currency_code;
+		$capture = $purchase_unit['payments']['captures'][0] ?? null;
+		if (!$capture || ($capture['status'] ?? '') !== self::STATUS_COMPLETED)
+		{
+			return false;
+		}
+
+		$currency = (string) ($capture['amount']['currency_code'] ?? '');
 		if ($term->get_currency() !== $currency)
 		{
 			return false;
 		}
 
-		$gross = $response->result->purchase_units[0]->payments->captures[0]->amount->value;
+		$gross = (string) ($capture['amount']['value'] ?? '0');
 		$amount = $this->currency->parse_value($currency, $gross);
 		if ($term->get_price() !== $amount)
 		{
 			return false;
 		}
 
-		$trans_id = $response->result->purchase_units[0]->payments->captures[0]->invoice_id;
+		$trans_id = (string) ($capture['invoice_id'] ?? ($capture['id'] ?? ''));
+		if ($trans_id === '')
+		{
+			return false;
+		}
+
 		$sql = 'SELECT 1
 				FROM ' . $this->trans_table . "
 				WHERE trans_id = '" . $this->db->sql_escape($trans_id) . "'";
@@ -122,9 +133,9 @@ class transaction extends operator implements transaction_interface
 			return false;
 		}
 
-		$user_id = $response->result->purchase_units[0]->payments->captures[0]->custom_id;
+		$user_id = (int) ($capture['custom_id'] ?? ($purchase_unit['custom_id'] ?? 0));
 		$sub_id = $this->sub_operator->create_subscription($term, $user_id);
-		$payer_id = $response->result->payer->payer_id;
+		$payer_id = (string) ($order_data['payer']['payer_id'] ?? '');
 
 		return $this->insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id);
 	}

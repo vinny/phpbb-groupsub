@@ -268,14 +268,16 @@ class main_controller
 		$client_id = $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'];
 		$client_secret = $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'];
 
-		$u_ppsdk = sprintf('https://www.paypal.com/sdk/js?client-id=%s&amp;locale=%s&amp;currency=%s', $client_id, $this->language->lang('GROUPSUB_PP_LOCALE'), $term['term']->get_currency());
+		$u_ppsdk = sprintf('https://www.paypal.com/sdk/js?client-id=%s&locale=%s&currency=%s', $client_id, $this->language->lang('GROUPSUB_PP_LOCALE'), $term['term']->get_currency());
 		$u_create = $this->helper->route('stevotvr_groupsub_ppjs', array('action' => 'create'));
 		$u_capture = $this->helper->route('stevotvr_groupsub_ppjs', array('action' => 'capture'));
 
 		$paypal_config = json_encode(array(
-			'u_create'	=> $u_create,
-			'u_capture'	=> $u_capture,
-			'term_id'	=> $term['term']->get_id(),
+			'u_create'			=> $u_create,
+			'u_capture'			=> $u_capture,
+			'term_id'			=> $term['term']->get_id(),
+			'lang_error'		=> $this->language->lang('GROUPSUB_PAYMENT_ERROR'),
+			'lang_cancelled'	=> $this->language->lang('GROUPSUB_PAYMENT_CANCELLED'),
 		));
 
 		$this->template->assign_vars(array(

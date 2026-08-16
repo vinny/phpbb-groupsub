@@ -38,8 +38,8 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-	'ACP_GROUPSUB_SETTINGS_TITLE'			=> 'Group Subscription settings',
-	'ACP_GROUPSUB_SETTINGS_SAVED'			=> 'Group Subscription options saved successfully',
+	'ACP_GROUPSUB_SETTINGS_TITLE'			=> 'Group subscription settings',
+	'ACP_GROUPSUB_SETTINGS_SAVED'			=> 'Group subscription settings have been saved.',
 	'ACP_GROUPSUB_SETTINGS_PAYPAL'			=> 'PayPal settings',
 	'ACP_GROUPSUB_PP_SANDBOX'				=> 'Enable sandbox mode',
 	'ACP_GROUPSUB_PP_SANDBOX_EXPLAIN'		=> 'Sandbox mode allows you to test PayPal payments without using real funds.',
@@ -65,8 +65,8 @@ $lang = array_merge($lang, array(
 	'ACP_GROUPSUB_GRACE'					=> 'Grace period',
 	'ACP_GROUPSUB_GRACE_EXPLAIN'			=> 'The number of days after a subscription ends before removing the user from groups.',
 
-	'ACP_GROUPSUB_SANDBOX'	=> 'Sandbox',
-	'ACP_GROUPSUB_LIVE'		=> 'Live',
+	'ACP_GROUPSUB_SANDBOX'					=> 'Sandbox',
+	'ACP_GROUPSUB_LIVE'						=> 'Live',
 
-	'ACP_GROUPSUB_ERROR_CURRENCY'	=> 'You must select a valid currency.',
+	'ACP_GROUPSUB_ERROR_CURRENCY'			=> 'You must select a valid currency.',
 ));

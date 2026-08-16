@@ -180,6 +180,7 @@ services:
             - '@request'
             - '@stevotvr.groupsub.operator.package'
             - '@stevotvr.groupsub.operator.transaction'
+            - '@stevotvr.groupsub.operator.paypal_client'
             - '@user'
 
     stevotvr.groupsub.entity:
@@ -274,3 +275,8 @@ services:
     stevotvr.groupsub.operator.http_helper:
         class: stevotvr\groupsub\operator\http_helper
         parent: stevotvr.groupsub.operator
+
+    stevotvr.groupsub.operator.paypal_client:
+        class: stevotvr\groupsub\operator\paypal_client
+        arguments:
+            - '@config'

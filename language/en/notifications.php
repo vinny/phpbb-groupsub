@@ -38,7 +38,7 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-	'GROUPSUB_NOTIFICATION_GROUP'				=> 'Group Subscription Notifications',
+	'GROUPSUB_NOTIFICATION_GROUP'				=> 'Group subscription notifications',
 	'GROUPSUB_NOTIFICATION_TYPE_WARN'			=> 'Your subscription is about to expire',
 	'GROUPSUB_NOTIFICATION_TYPE_EXPIRED'		=> 'Your subscription has expired',
 	'GROUPSUB_NOTIFICATION_TYPE_STARTED'		=> 'Your subscription has started',

@@ -1,108 +1,81 @@
 {% include 'overall_header.html' %}
 
-<form action="https://www.{% if S_PP_SANDBOX %}sandbox.{% endif %}paypal.com/cgi-bin/webscr" method="post">
+<form action="{{ U_ACTION }}" method="post">
 
 	<h2>{{ lang('GROUPSUB_PACKAGE_LIST') }}</h2>
 
 {% if HEADER %}
-
 	<div class="panel bg2">
-
-	<div class="inner">
-
-		<div class="postbody">
-
-		<div class="content">{{ HEADER }}</div>
-
+		<div class="inner">
+			<div class="postbody">
+				<div class="content">{{ HEADER|raw }}</div>
+			</div>
 		</div>
-
 	</div>
-
-	</div>
-
 {% endif %}
 
 	<div class="panel bg1">
+		<div class="inner">
+			<h3>{{ lang('GROUPSUB_CONFIRM', PKG_NAME) }}</h3>
 
-	<div class="inner">
-
-		<h3>{{ lang('GROUPSUB_CONFIRM', PKG_NAME) }}</h3>
-
-		<div class="column1">
-
-			<div class="postbody">
-
-			<div class="content">
-
-				{% if PKG_DESC %}{{ PKG_DESC }}{% else %}<i>{{ lang('GROUPSUB_NO_DESC') }}</i>{% endif %}
-
+			<div class="column1">
+				<div class="postbody">
+					<div class="content">
+						{% if PKG_DESC %}{{ PKG_DESC|raw }}{% else %}<i>{{ lang('GROUPSUB_NO_DESC') }}</i>{% endif %}
+					</div>
+				</div>
 			</div>
 
+			<div class="column2">
+				<div class="panel bg2">
+					<div class="inner">
+						<dl class="details">
+							<dt>{{ lang('GROUPSUB_SUBSCRIPTION') ~ lang('COLON') }}</dt>
+							<dd>{{ PKG_NAME }}</dd>
+							<dt>{{ lang('GROUPSUB_PRICE') ~ lang('COLON') }}</dt>
+							<dd>{{ TERM_PRICE }}</dd>
+							<dt>{{ lang('GROUPSUB_LENGTH') ~ lang('COLON') }}</dt>
+							<dd>{% if TERM_LENGTH %}{{ TERM_LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</dd>
+						</dl>
+					</div>
+				</div>
 			</div>
+
+			<hr>
+
+			<fieldset class="submit-buttons">
+				{% if PP_ENABLED %}
+				<noscript><p class="error">{{ lang('GROUPSUB_JS_REQUIRED') }}</p></noscript>
+				<div id="paypal-error" class="rules" style="display: none; margin-bottom: 10px;"></div>
+				<div id="paypal-loading" style="display: none; margin-bottom: 10px;"><i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i> {{ lang('GROUPSUB_PROCESSING') }}</div>
+				<script>paypal_button_config = {{ PAYPAL_CONFIG|raw }};</script>
+				<div id="paypal-button-container"></div>
+				{% if not INCLUDED_PAYPALSDKJS %}
+					{% INCLUDEJS U_PPSDK %}
+					{% DEFINE INCLUDED_PAYPALSDKJS = true %}
+				{% endif %}
+				{% INCLUDEJS '@stevotvr_groupsub/paypal_buttons.js' %}
+				{% endif %}
+				<a href="{{ U_ACTION }}" class="button2">{{ lang('CANCEL') }}</a>
+			</fieldset>
+
+			<fieldset id="paypal-success" style="display: none;">
+				<div class="successbox">
+					<p>{{ lang('GROUPSUB_RETURN_MESSAGE', PKG_NAME, TERM_LENGTH) }}</p>
+				</div>
+			</fieldset>
 
 		</div>
-
-		<div class="column2">
-
-			<div class="panel bg2">
-
-			<div class="inner">
-
-				<dl class="details">
-					<dt>{{ lang('GROUPSUB_SUBSCRIPTION') ~ lang('COLON') }}</dt>
-					<dd>{{ PKG_NAME }}</dd>
-					<dt>{{ lang('GROUPSUB_PRICE') ~ lang('COLON') }}</dt>
-					<dd>{{ TERM_PRICE }}</dd>
-					<dt>{{ lang('GROUPSUB_LENGTH') ~ lang('COLON') }}</dt>
-					<dd>{% if TERM_LENGTH %}{{ TERM_LENGTH }}{% else %}<b>{{ lang('GROUPSUB_LENGTH_UNLIMITED') }}</b>{% endif %}</dd>
-				</dl>
-
-			</div>
-
-			</div>
-
-		</div>
-
-		<hr>
-
-		<fieldset class="submit-buttons">
-{% if PP_ENABLED %}
-			<noscript><p class="error">{{ lang('GROUPSUB_JS_REQUIRED') }}</p></noscript>
-			<script>paypal_button_config = {{ PAYPAL_CONFIG|raw }};</script>
-			<div id="paypal-button-container"></div>
-			{% if not INCLUDED_PAYPALSDKJS %}
-				{% INCLUDEJS U_PPSDK %}
-				{% DEFINE INCLUDED_PAYPALSDKJS = true %}
-			{% endif %}
-			{% INCLUDEJS '@stevotvr_groupsub/paypal_buttons.js' %}
-{% endif %}
-			<a href="{{ U_ACTION }}" class="button2">{{ lang('CANCEL') }}</a>
-		</fieldset>
-
-		<fieldset id="paypal-success" style="display: none;">
-			<p>{{ lang('GROUPSUB_RETURN_MESSAGE', PKG_NAME, TERM_LENGTH) }}</p>
-		</fieldset>
-
-	</div>
-
 	</div>
 
 {% if FOOTER %}
-
 	<div class="panel bg2">
-
-	<div class="inner">
-
-		<div class="postbody">
-
-		<div class="content">{{ FOOTER }}</div>
-
+		<div class="inner">
+			<div class="postbody">
+				<div class="content">{{ FOOTER|raw }}</div>
+			</div>
 		</div>
-
 	</div>
-
-	</div>
-
 {% endif %}
 
 </form>

@@ -39,6 +39,7 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 	{
 		parent::add_lang();
 
+		$this->language->add_lang('posting');
 		$this->language->add_lang('acp_settings', 'stevotvr/groupsub');
 	}
 
@@ -73,12 +74,15 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 				'grace'				=> max(0, $this->request->variable('grace', 0)),
 			);
 
-			$header = $this->request->variable('header', '');
+			$header = $this->request->variable('header', '', true);
 			$header_bbcode = $this->request->variable('header_bbcode', false);
 			$header_smilies = $this->request->variable('header_smilies', false);
 			$header_magic_url = $this->request->variable('header_magic_url', false);
 			$header_uid = $header_bitfield = $header_flags = '';
-			generate_text_for_storage($header, $header_uid, $header_bitfield, $header_flags, $header_bbcode, $header_magic_url, $header_smilies);
+			if ($header !== '')
+			{
+				generate_text_for_storage($header, $header_uid, $header_bitfield, $header_flags, $header_bbcode, $header_magic_url, $header_smilies);
+			}
 			$data = array_merge($data, array(
 				'header_bbcode_uid'			=> $header_uid,
 				'header_bbcode_bitfield'	=> $header_bitfield,
@@ -86,12 +90,15 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 			));
 			$this->config_text->set('stevotvr_groupsub_header', $header);
 
-			$footer = $this->request->variable('footer', '');
+			$footer = $this->request->variable('footer', '', true);
 			$footer_bbcode = $this->request->variable('footer_bbcode', false);
 			$footer_smilies = $this->request->variable('footer_smilies', false);
 			$footer_magic_url = $this->request->variable('footer_magic_url', false);
 			$footer_uid = $footer_bitfield = $footer_flags = '';
-			generate_text_for_storage($footer, $footer_uid, $footer_bitfield, $footer_flags, $footer_bbcode, $footer_magic_url, $footer_smilies);
+			if ($footer !== '')
+			{
+				generate_text_for_storage($footer, $footer_uid, $footer_bitfield, $footer_flags, $footer_bbcode, $footer_magic_url, $footer_smilies);
+			}
 			$data = array_merge($data, array(
 				'footer_bbcode_uid'			=> $footer_uid,
 				'footer_bbcode_bitfield'	=> $footer_bitfield,
@@ -111,7 +118,8 @@ class acp_settings_controller extends acp_base_controller implements acp_setting
 					$this->config->set('stevotvr_groupsub_' . $key, $value);
 				}
 
-				$this->config->set('stevotvr_groupsub_active', !$data['pp_sandbox'] && $data['pp_client'] && $data['pp_secret']);
+				$is_active = $data['pp_sandbox'] ? ($data['sb_client'] && $data['sb_secret']) : ($data['pp_client'] && $data['pp_secret']);
+				$this->config->set('stevotvr_groupsub_active', (bool) $is_active);
 
 				trigger_error($this->language->lang('ACP_GROUPSUB_SETTINGS_SAVED') . adm_back_link($this->u_action));
 			}

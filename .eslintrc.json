@@ -1,0 +1,21 @@
+{
+  "env": {
+    "browser": true,
+    "jquery": true,
+    "es6": true
+  },
+  "globals": {
+    "phpbb": "readonly",
+    "paypal": "readonly",
+    "paypal_button_config": "readonly",
+    "terms": "readonly"
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "rules": {
+    "no-unused-vars": ["error", { "args": "none" }],
+    "quotes": ["error", "single", { "avoidEscape": true }]
+  }
+}

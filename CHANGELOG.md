@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0-dev
+
+* Raised minimum requirements to PHP 8.2+ and phpBB 3.3.0+
+* Replaced deprecated `paypal/paypal-checkout-sdk` with a lightweight, native PayPal REST API v2 client
+* Added native OAuth2 token caching for PayPal REST requests
+* Updated PayPal frontend JavaScript with loading indicators, error handling, cancellation feedback, and responsive button styling
+* Modernized codebase with PHP 8.2 typed properties and match expressions
+* Standardized all language files following phpBB typographic and sentence case guidelines
+* Cleaned up Composer dependencies and removed obsolete build tools
+
 ## 1.3.0-beta4 (2/2/21)
 
 * Fixed fatal error on phpBB 3.3.3
