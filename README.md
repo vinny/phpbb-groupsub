@@ -1,4 +1,4 @@
-# Group Subscription (PayPal)
+# Group Subscription (PayPal) [![Tests](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml)
 
 Group Subscription is a phpBB extension that allows board administrators to offer paid usergroup subscriptions through PayPal. Users are automatically added to groups upon payment and removed when their subscription ends.
 

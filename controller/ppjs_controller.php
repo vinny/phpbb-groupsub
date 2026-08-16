@@ -87,7 +87,8 @@ class ppjs_controller
 		transaction_interface $trans_operator,
 		paypal_client_interface $paypal_client,
 		user $user
-	) {
+	)
+	{
 		$this->config = $config;
 		$this->currency = $currency;
 		$this->helper = $helper;
