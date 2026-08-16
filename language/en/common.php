@@ -58,6 +58,13 @@ $lang = array_merge($lang, array(
 
 	'GROUPSUB_RETURN_MESSAGE'		=> 'You are now subscribed to <strong>%1$s</strong> for %2$s.',
 
+	'GROUPSUB_ERROR_PP_CREDENTIALS'	=> 'PayPal credentials are not configured.',
+	'GROUPSUB_ERROR_INVALID_ACTION'	=> 'Invalid action requested.',
+	'GROUPSUB_ERROR_INVALID_TERM'	=> 'Invalid subscription term specified.',
+	'GROUPSUB_ERROR_ORDER_CREATION'	=> 'Failed to create the PayPal order.',
+	'GROUPSUB_ERROR_MISSING_ORDER'	=> 'Missing order ID.',
+	'GROUPSUB_ERROR_ORDER_CAPTURE'	=> 'Failed to capture the PayPal order.',
+
 	'GROUPSUB_PP_LOCALE'			=> 'en_US',
 
 	'GROUPSUB_DECIMAL_SEPARATOR'	=> '.',

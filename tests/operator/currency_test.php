@@ -84,11 +84,14 @@ class currency_test extends \phpbb_test_case
 		$this->language->expects($this->any())
 			->method('lang')
 			->willReturnCallback(function ($key) {
-				return match ($key) {
-					'GROUPSUB_DECIMAL_SEPARATOR'   => '.',
-					'GROUPSUB_THOUSANDS_SEPARATOR' => ',',
-					default                        => $key,
-				};
+				switch ($key) {
+					case 'GROUPSUB_DECIMAL_SEPARATOR':
+						return '.';
+					case 'GROUPSUB_THOUSANDS_SEPARATOR':
+						return ',';
+					default:
+						return $key;
+				}
 			});
 
 		$this->currency_operator = new \stevotvr\groupsub\operator\currency(

@@ -12,6 +12,7 @@ namespace stevotvr\groupsub\controller;
 
 use phpbb\config\config;
 use phpbb\controller\helper;
+use phpbb\language\language;
 use phpbb\request\request_interface;
 use phpbb\user;
 use stevotvr\groupsub\operator\currency_interface;
@@ -42,6 +43,11 @@ class ppjs_controller
 	protected helper $helper;
 
 	/**
+	 * @var language
+	 */
+	protected language $language;
+
+	/**
 	 * @var request_interface
 	 */
 	protected request_interface $request;
@@ -69,19 +75,21 @@ class ppjs_controller
 	/**
 	 * Constructor.
 	 *
-	 * @param config                 $config
-	 * @param currency_interface     $currency
-	 * @param helper                 $helper
-	 * @param request_interface      $request
-	 * @param package_interface      $pkg_operator
-	 * @param transaction_interface  $trans_operator
+	 * @param config                  $config
+	 * @param currency_interface      $currency
+	 * @param helper                  $helper
+	 * @param language                $language
+	 * @param request_interface       $request
+	 * @param package_interface       $pkg_operator
+	 * @param transaction_interface   $trans_operator
 	 * @param paypal_client_interface $paypal_client
-	 * @param user                   $user
+	 * @param user                    $user
 	 */
 	public function __construct(
 		config $config,
 		currency_interface $currency,
 		helper $helper,
+		language $language,
 		request_interface $request,
 		package_interface $pkg_operator,
 		transaction_interface $trans_operator,
@@ -92,6 +100,7 @@ class ppjs_controller
 		$this->config = $config;
 		$this->currency = $currency;
 		$this->helper = $helper;
+		$this->language = $language;
 		$this->request = $request;
 		$this->pkg_operator = $pkg_operator;
 		$this->trans_operator = $trans_operator;
@@ -114,16 +123,20 @@ class ppjs_controller
 
 		if ($client_id === '' || $client_secret === '')
 		{
-			return new JsonResponse(['error' => 'PayPal credentials not configured'], 503);
+			return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_PP_CREDENTIALS')], 503);
 		}
 
 		$this->paypal_client->set_credentials($client_id, $client_secret, $sandbox);
 
-		return match ($action) {
-			'create'  => $this->create(),
-			'capture' => $this->capture(),
-			default   => new JsonResponse(['error' => 'Invalid action'], 404),
-		};
+		switch ($action)
+		{
+			case 'create':
+				return $this->create();
+			case 'capture':
+				return $this->capture();
+			default:
+				return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_INVALID_ACTION')], 404);
+		}
 	}
 
 	/**
@@ -137,7 +150,7 @@ class ppjs_controller
 		$term = $this->pkg_operator->get_package_term($term_id);
 		if (!$term)
 		{
-			return new JsonResponse(['error' => 'Invalid package term'], 404);
+			return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_INVALID_TERM')], 404);
 		}
 
 		$price = $term['term']->get_price();
@@ -165,7 +178,7 @@ class ppjs_controller
 		$response = $this->paypal_client->create_order($payload);
 		if (!$response || empty($response['id']))
 		{
-			return new JsonResponse(['error' => 'Order creation failed'], 400);
+			return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_ORDER_CREATION')], 400);
 		}
 
 		return new JsonResponse([
@@ -184,13 +197,13 @@ class ppjs_controller
 		$order_id = (string) $this->request->variable('order_id', '');
 		if ($order_id === '')
 		{
-			return new JsonResponse(['error' => 'Missing order ID'], 400);
+			return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_MISSING_ORDER')], 400);
 		}
 
 		$response = $this->paypal_client->capture_order($order_id);
 		if (!$response)
 		{
-			return new JsonResponse(['error' => 'Order capture failed'], 400);
+			return new JsonResponse(['error' => $this->language->lang('GROUPSUB_ERROR_ORDER_CAPTURE')], 400);
 		}
 
 		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);

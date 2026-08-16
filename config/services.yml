@@ -177,6 +177,7 @@ services:
             - '@config'
             - '@stevotvr.groupsub.operator.currency'
             - '@controller.helper'
+            - '@language'
             - '@request'
             - '@stevotvr.groupsub.operator.package'
             - '@stevotvr.groupsub.operator.transaction'

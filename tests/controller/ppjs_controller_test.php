@@ -20,6 +20,7 @@ class ppjs_controller_test extends \phpbb_test_case
 	protected $config;
 	protected $currency;
 	protected $helper;
+	protected $language;
 	protected $request;
 	protected $pkg_operator;
 	protected $trans_operator;
@@ -40,6 +41,16 @@ class ppjs_controller_test extends \phpbb_test_case
 		$this->helper = $this->getMockBuilder('\phpbb\controller\helper')
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->language = $this->getMockBuilder('\phpbb\language\language')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->language->expects($this->any())
+			->method('lang')
+			->willReturnCallback(function ($key) {
+				return $key;
+			});
 
 		$this->request = $this->getMockBuilder('\phpbb\request\request_interface')
 			->getMock();
@@ -65,6 +76,7 @@ class ppjs_controller_test extends \phpbb_test_case
 			$this->config,
 			$this->currency,
 			$this->helper,
+			$this->language,
 			$this->request,
 			$this->pkg_operator,
 			$this->trans_operator,
@@ -78,12 +90,14 @@ class ppjs_controller_test extends \phpbb_test_case
 		$this->config->expects($this->any())
 			->method('offsetGet')
 			->willReturnCallback(function ($key) {
-				return match ($key) {
-					'stevotvr_groupsub_pp_sandbox' => 0,
-					'stevotvr_groupsub_pp_client'  => '',
-					'stevotvr_groupsub_pp_secret'  => '',
-					default                        => '',
-				};
+				switch ($key) {
+					case 'stevotvr_groupsub_pp_sandbox':
+						return 0;
+					case 'stevotvr_groupsub_pp_client':
+					case 'stevotvr_groupsub_pp_secret':
+					default:
+						return '';
+				}
 			});
 
 		$response = $this->controller->handle('create');
@@ -95,12 +109,16 @@ class ppjs_controller_test extends \phpbb_test_case
 		$this->config->expects($this->any())
 			->method('offsetGet')
 			->willReturnCallback(function ($key) {
-				return match ($key) {
-					'stevotvr_groupsub_pp_sandbox' => 0,
-					'stevotvr_groupsub_pp_client'  => 'valid_client',
-					'stevotvr_groupsub_pp_secret'  => 'valid_secret',
-					default                        => '',
-				};
+				switch ($key) {
+					case 'stevotvr_groupsub_pp_sandbox':
+						return 0;
+					case 'stevotvr_groupsub_pp_client':
+						return 'valid_client';
+					case 'stevotvr_groupsub_pp_secret':
+						return 'valid_secret';
+					default:
+						return '';
+				}
 			});
 
 		$this->paypal_client->expects($this->once())
@@ -117,12 +135,16 @@ class ppjs_controller_test extends \phpbb_test_case
 		$this->config->expects($this->any())
 			->method('offsetGet')
 			->willReturnCallback(function ($key) {
-				return match ($key) {
-					'stevotvr_groupsub_pp_sandbox' => 0,
-					'stevotvr_groupsub_pp_client'  => 'valid_client',
-					'stevotvr_groupsub_pp_secret'  => 'valid_secret',
-					default                        => '',
-				};
+				switch ($key) {
+					case 'stevotvr_groupsub_pp_sandbox':
+						return 0;
+					case 'stevotvr_groupsub_pp_client':
+						return 'valid_client';
+					case 'stevotvr_groupsub_pp_secret':
+						return 'valid_secret';
+					default:
+						return '';
+				}
 			});
 
 		$this->request->expects($this->once())
