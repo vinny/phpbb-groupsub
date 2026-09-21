@@ -40,6 +40,7 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, array(
 	'ACP_GROUPSUB_TITLE'		=> 'Group Subscription',
 	'ACP_GROUPSUB_SETTINGS'		=> 'Settings',
+	'ACP_GROUPSUB_GATEWAYS'		=> 'Payment gateways',
 	'ACP_GROUPSUB_MANAGE_PKGS'	=> 'Manage packages',
 	'ACP_GROUPSUB_MANAGE_SUBS'	=> 'Manage subscriptions',
 	'ACP_GROUPSUB_TRANSACTIONS'	=> 'View transactions',

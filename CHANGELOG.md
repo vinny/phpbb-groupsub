@@ -1,6 +1,14 @@
 # Changelog
 
-## 2.0.0-dev
+## 2.1.0-dev
+
+* Added Multi-Gateway payment architecture supporting multiple providers
+* Added ACP Payment Gateways management module
+* Added Pix payment gateway integration via Mercado Pago PHP SDK
+* Added Stripe and BTCPay Server provider scaffolding
+* Added gateway and transaction status tracking for pending and completed transactions
+
+## 2.0.0 (2026-08-16)
 
 * Raised minimum requirements to PHP 8.2+ and phpBB 3.3.0+
 * Replaced deprecated `paypal/paypal-checkout-sdk` with a lightweight, native PayPal REST API client

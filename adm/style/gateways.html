@@ -1,0 +1,115 @@
+{% include 'overall_header.html' %}
+
+<a id="maincontent"></a>
+
+{% if S_EDIT_GATEWAY %}
+
+<a href="{{ U_BACK }}" style="float: {{ S_CONTENT_FLOW_END }};">&laquo; {{ lang('BACK') }}</a>
+
+<h1>{{ lang('ACP_GROUPSUB_GW_EDIT_TITLE', GW_NAME) }}</h1>
+
+<form id="edit_gateway" method="post" action="{{ U_ACTION }}" autocomplete="off">
+	{% for fs in fieldsets %}
+	<fieldset>
+		<legend>{{ fs.LEGEND }}</legend>
+		{% if fs.EXPLAIN %}<p>{{ fs.EXPLAIN }}</p>{% endif %}
+
+		{% for f in fs.fields %}
+		<dl>
+			<dt><label for="gw_{{ f.KEY }}">{{ f.TITLE ~ lang('COLON') }}</label>{% if f.EXPLAIN %}<br><span>{{ f.EXPLAIN }}</span>{% endif %}</dt>
+			<dd>
+			{% if f.TYPE == 'radio' %}
+				<label><input type="radio" id="gw_{{ f.KEY }}_1" name="{{ f.KEY }}" value="1"{% if f.VALUE %} checked{% endif %}> {{ lang('YES') }}</label>
+				<label><input type="radio" id="gw_{{ f.KEY }}_0" name="{{ f.KEY }}" value="0"{% if not f.VALUE %} checked{% endif %}> {{ lang('NO') }}</label>
+			{% elseif f.TYPE == 'password' %}
+				<input class="text medium" type="password" id="gw_{{ f.KEY }}" name="{{ f.KEY }}" value="{{ f.VALUE }}" autocomplete="new-password">
+			{% elseif f.TYPE == 'textarea' %}
+				<textarea id="gw_{{ f.KEY }}" name="{{ f.KEY }}" rows="4" cols="45" autocomplete="off">{{ f.VALUE }}</textarea>
+			{% else %}
+				<input class="text medium" type="text" id="gw_{{ f.KEY }}" name="{{ f.KEY }}" value="{{ f.VALUE }}" autocomplete="off">
+			{% endif %}
+			</dd>
+		</dl>
+		{% endfor %}
+
+		{% if fs.U_WEBHOOK_URL %}
+		<dl>
+			<dt><label>{{ lang('ACP_GROUPSUB_WEBHOOK_URL') ~ lang('COLON') }}</label></dt>
+			<dd><input class="text medium" type="text" value="{{ fs.U_WEBHOOK_URL }}" readonly onclick="this.select();"></dd>
+		</dl>
+		{% endif %}
+
+		{% if fs.S_HAS_EVENTS %}
+		<p><strong>{{ lang('ACP_GROUPSUB_WEBHOOK_EVENTS_TITLE') ~ lang('COLON') }}</strong></p>
+		<ul>
+			{% for ev in fs.events %}
+			<li><strong>{{ ev.NAME }}</strong> (<code>{{ ev.CODE }}</code>)</li>
+			{% endfor %}
+		</ul>
+		{% endif %}
+	</fieldset>
+	{% endfor %}
+
+	<fieldset class="submit-buttons">
+		<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}">&nbsp;
+		<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}">
+		{{ S_FORM_TOKEN }}
+	</fieldset>
+</form>
+
+{% else %}
+
+<h1>{{ lang('ACP_GROUPSUB_GATEWAYS_TITLE') }}</h1>
+
+<p>{{ lang('ACP_GROUPSUB_GATEWAYS_EXPLAIN') }}</p>
+
+<table class="table1 zebra-table responsive">
+	<thead>
+		<tr>
+			<th>{{ lang('ACP_GROUPSUB_GW_NAME') }}</th>
+			<th width="15%">{{ lang('ACP_GROUPSUB_GW_STATUS') }}</th>
+			<th width="15%">{{ lang('ACP_GROUPSUB_GW_SANDBOX') }}</th>
+			<th width="15%">{{ lang('ACP_GROUPSUB_GW_RECURRING') }}</th>
+			<th width="20%">{{ lang('ACP_GROUPSUB_GW_CURRENCIES') }}</th>
+			<th width="10%">{{ lang('ACTION') }}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for gw in gateways %}
+		<tr>
+			<td><strong><a href="{{ gw.U_EDIT }}">{{ gw.NAME }}</a></strong></td>
+			<td>
+				{% if gw.S_ENABLED %}
+					<b style="color: #00d600;">{{ lang('YES') }}</b>
+				{% else %}
+					<i style="color: #888;">{{ lang('NO') }}</i>
+				{% endif %}
+			</td>
+			<td>
+				{% if gw.S_SANDBOX %}
+					<span style="color: #e67e22; font-weight: bold;">{{ lang('ACP_GROUPSUB_SANDBOX') }}</span>
+				{% else %}
+					<span style="color: #27ae60; font-weight: bold;">{{ lang('ACP_GROUPSUB_LIVE') }}</span>
+				{% endif %}
+			</td>
+			<td>
+				{% if gw.S_RECURRING %}
+					<span style="color: #2e7d32; font-weight: bold;">{{ lang('YES') }}</span>
+				{% else %}
+					<span style="color: #888;">{{ lang('NO') }}</span>
+				{% endif %}
+			</td>
+			<td>{{ gw.CURRENCIES }}</td>
+			<td class="actions">
+				<a href="{{ gw.U_EDIT }}">{{ ICON_EDIT }}</a>
+			</td>
+		</tr>
+	{% else %}
+		<tr><td colspan="6" style="text-align: center;">{{ lang('NO_ENTRIES') }}</td></tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{% endif %}
+
+{% include 'overall_footer.html' %}

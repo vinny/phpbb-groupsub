@@ -17,6 +17,7 @@ use phpbb\db\driver\driver_interface;
 use phpbb\event\data;
 use phpbb\template\template;
 use stevotvr\groupsub\operator\package_interface;
+use stevotvr\groupsub\payment\provider_manager_interface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -69,16 +70,32 @@ class main_listener implements EventSubscriberInterface
 	protected $sub_table;
 
 	/**
-	 * @param auth              $auth
-	 * @param config            $config
-	 * @param driver_interface  $db
-	 * @param helper            $helper
-	 * @param package_interface $pkg_operator
-	 * @param template          $template
-	 * @param string            $action_table The name of the groupsub_actions table
-	 * @param string            $sub_table    The name of the groupsub_subs table
+	 * @var provider_manager_interface
 	 */
-	public function __construct(auth $auth, config $config, driver_interface $db, helper $helper, package_interface $pkg_operator, template $template, $action_table, $sub_table)
+	protected provider_manager_interface $provider_manager;
+
+	/**
+	 * @param auth                        $auth
+	 * @param config                      $config
+	 * @param driver_interface            $db
+	 * @param helper                      $helper
+	 * @param package_interface           $pkg_operator
+	 * @param template                    $template
+	 * @param provider_manager_interface  $provider_manager
+	 * @param string                      $action_table The name of the groupsub_actions table
+	 * @param string                      $sub_table    The name of the groupsub_subs table
+	 */
+	public function __construct(
+		auth $auth,
+		config $config,
+		driver_interface $db,
+		helper $helper,
+		package_interface $pkg_operator,
+		template $template,
+		provider_manager_interface $provider_manager,
+		$action_table,
+		$sub_table
+	)
 	{
 		$this->auth = $auth;
 		$this->config = $config;
@@ -86,6 +103,7 @@ class main_listener implements EventSubscriberInterface
 		$this->helper = $helper;
 		$this->pkg_operator = $pkg_operator;
 		$this->template = $template;
+		$this->provider_manager = $provider_manager;
 		$this->action_table = $action_table;
 		$this->sub_table = $sub_table;
 	}
@@ -137,7 +155,21 @@ class main_listener implements EventSubscriberInterface
 		);
 		$event['lang_set_ext'] = $lang_set_ext;
 
-		if (($this->config['stevotvr_groupsub_active'] || $this->auth->acl_get('a_')) && $this->pkg_operator->count_packages())
+		$has_sandbox = false;
+		foreach ($this->provider_manager->get_enabled_providers() as $provider)
+		{
+			if ($provider->is_sandbox())
+			{
+				$has_sandbox = true;
+				break;
+			}
+		}
+
+		$is_admin = (bool) $this->auth->acl_get('a_');
+		$is_active = (bool) $this->config['stevotvr_groupsub_active'];
+		$can_see = ($is_active && !$has_sandbox) || $is_admin;
+
+		if ($can_see && $this->pkg_operator->count_packages())
 		{
 			$this->template->assign_var('U_GROUPSUB_SUBS', $this->helper->route('stevotvr_groupsub_main'));
 		}

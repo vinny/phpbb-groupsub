@@ -37,6 +37,9 @@ class main_module
 
 		switch ($mode)
 		{
+			case 'gateways':
+				$this->manage_gateways();
+			break;
 			case 'packages':
 				$this->manage_packages();
 			break;
@@ -48,6 +51,31 @@ class main_module
 			break;
 			default:
 				$this->settings();
+		}
+	}
+
+	/**
+	 * Handle the payment gateways mode of the module.
+	 */
+	protected function manage_gateways()
+	{
+		$this->tpl_name = 'gateways';
+
+		$controller = $this->container->get('stevotvr.groupsub.controller.acp.gateways');
+		$controller->set_page_url($this->u_action);
+
+		$action = $this->request->variable('action', '');
+		$gw = $this->request->variable('gw', '');
+
+		if ($action === 'edit' && $gw !== '')
+		{
+			$this->page_title = 'ACP_GROUPSUB_GW_EDIT';
+			$controller->edit($gw);
+		}
+		else
+		{
+			$this->page_title = 'ACP_GROUPSUB_GATEWAYS_TITLE';
+			$controller->display();
 		}
 	}
 

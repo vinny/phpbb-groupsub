@@ -33,18 +33,21 @@ interface transaction_interface
 	/**
 	 * Record a transaction directly in the database.
 	 *
-	 * @param string  $trans_id The transaction ID
-	 * @param boolean $sandbox  Sandbox mode is enabled
-	 * @param int     $amount   The payment amount in the currency subunit
-	 * @param string  $currency The currency code
-	 * @param int     $user_id  The user ID
-	 * @param int     $sub_id   The subscription ID
-	 * @param string  $gross    The gross payment amount
-	 * @param string  $payer_id The PayPal payer ID
+	 * @param string  $trans_id    The transaction ID
+	 * @param boolean $sandbox     Sandbox mode is enabled
+	 * @param int     $amount      The payment amount in the currency subunit
+	 * @param string  $currency    The currency code
+	 * @param int     $user_id     The user ID
+	 * @param int     $sub_id      The subscription ID
+	 * @param string  $gross       The gross payment amount
+	 * @param string  $payer_id    The payer ID
+	 * @param string  $gateway     The payment gateway identifier
+	 * @param string  $status      The transaction status
+	 * @param string  $external_id The external provider transaction/order ID
 	 *
 	 * @return boolean The record was inserted successfully
 	 */
-	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id);
+	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id, $gateway = 'paypal', $status = 'completed', $external_id = '');
 
 	/**
 	 * Get transactions.

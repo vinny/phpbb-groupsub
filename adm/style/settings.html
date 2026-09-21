@@ -11,69 +11,6 @@
 
 <form id="settings" method="post" action="{{ U_ACTION }}">
 	<fieldset>
-		<legend>{{ lang('ACP_GROUPSUB_SETTINGS_PAYPAL') }}</legend>
-		<dl>
-			<dt><label for="pp_sandbox">{{ lang('ACP_GROUPSUB_PP_SANDBOX') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_PP_SANDBOX_EXPLAIN') }}</span></dt>
-			<dd><label><input type="radio" id="pp_sandbox" name="pp_sandbox" value="1"{% if PP_SANDBOX %} checked{% endif %}> {{ lang('YES') }}</label><label><input type="radio" name="pp_sandbox" value="0"{% if not PP_SANDBOX %} checked{% endif %}> {{ lang('NO') }}</label></dd>
-		</dl>
-		<fieldset>
-			<legend>{{ lang('ACP_GROUPSUB_SETTINGS_PP_API') }}</legend>
-			<dl>
-				<dt><label for="pp_client">{{ lang('ACP_GROUPSUB_PP_CLIENT') ~ lang('COLON') }}</label></dt>
-				<dd><input class="text medium" type="text" id="pp_client" name="pp_client" value="{{ PP_CLIENT }}"></dd>
-			</dl>
-			<dl>
-				<dt><label for="pp_secret">{{ lang('ACP_GROUPSUB_PP_SECRET') ~ lang('COLON') }}</label></dt>
-				<dd><input class="text medium" type="password" id="pp_secret" name="pp_secret" value="{{ PP_SECRET }}"></dd>
-			</dl>
-			<dl>
-				<dt><label for="webhook_id">{{ lang('ACP_GROUPSUB_WEBHOOK_ID') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_WEBHOOK_ID_EXPLAIN') }}</span></dt>
-				<dd><input class="text medium" type="text" id="webhook_id" name="webhook_id" value="{{ WEBHOOK_ID }}"></dd>
-			</dl>
-			<span>{{ lang('ACP_GROUPSUB_PP_API_EXPLAIN', lang('ACP_GROUPSUB_LIVE')) }}</span>
-		</fieldset>
-		<fieldset>
-			<legend>{{ lang('ACP_GROUPSUB_SETTINGS_PP_SB_API') }}</legend>
-			<dl>
-				<dt><label for="sb_client">{{ lang('ACP_GROUPSUB_PP_CLIENT') ~ lang('COLON') }}</label></dt>
-				<dd><input class="text medium" type="text" id="sb_client" name="sb_client" value="{{ SB_CLIENT }}"></dd>
-			</dl>
-			<dl>
-				<dt><label for="sb_secret">{{ lang('ACP_GROUPSUB_PP_SECRET') ~ lang('COLON') }}</label></dt>
-				<dd><input class="text medium" type="password" id="sb_secret" name="sb_secret" value="{{ SB_SECRET }}"></dd>
-			</dl>
-			<dl>
-				<dt><label for="sb_webhook_id">{{ lang('ACP_GROUPSUB_WEBHOOK_ID') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_WEBHOOK_ID_EXPLAIN') }}</span></dt>
-				<dd><input class="text medium" type="text" id="sb_webhook_id" name="sb_webhook_id" value="{{ SB_WEBHOOK_ID }}"></dd>
-			</dl>
-			<span>{{ lang('ACP_GROUPSUB_PP_API_EXPLAIN', lang('ACP_GROUPSUB_SANDBOX')) }}</span>
-		</fieldset>
-		<fieldset>
-			<legend>{{ lang('ACP_GROUPSUB_WEBHOOK_GUIDE_TITLE') }}</legend>
-			<p>{{ lang('ACP_GROUPSUB_WEBHOOK_GUIDE_EXPLAIN') }}</p>
-			<dl>
-				<dt><label>{{ lang('ACP_GROUPSUB_WEBHOOK_URL') ~ lang('COLON') }}</label></dt>
-				<dd><input class="text medium" type="text" value="{{ U_WEBHOOK_URL }}" readonly onclick="this.select();"></dd>
-			</dl>
-			<p><strong>{{ lang('ACP_GROUPSUB_WEBHOOK_EVENTS_TITLE') ~ lang('COLON') }}</strong></p>
-			<ul>
-				<li><strong>{{ lang('ACP_GROUPSUB_EVENT_PAYMENT_SALE_COMPLETED') }}</strong> (<code>PAYMENT.SALE.COMPLETED</code>)</li>
-				<li><strong>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUBSCRIPTION') }}</strong>:
-					<ul>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_ACTIVATED') }} (<code>BILLING.SUBSCRIPTION.ACTIVATED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_CANCELLED') }} (<code>BILLING.SUBSCRIPTION.CANCELLED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_CREATED') }} (<code>BILLING.SUBSCRIPTION.CREATED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_EXPIRED') }} (<code>BILLING.SUBSCRIPTION.EXPIRED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_PAYMENT_FAILED') }} (<code>BILLING.SUBSCRIPTION.PAYMENT_FAILED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_RE_ACTIVATED') }} (<code>BILLING.SUBSCRIPTION.RE-ACTIVATED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_SUSPENDED') }} (<code>BILLING.SUBSCRIPTION.SUSPENDED</code>)</li>
-						<li>{{ lang('ACP_GROUPSUB_EVENT_BILLING_SUB_UPDATED') }} (<code>BILLING.SUBSCRIPTION.UPDATED</code>)</li>
-					</ul>
-				</li>
-			</ul>
-		</fieldset>
-	</fieldset>
-	<fieldset>
 		<legend>{{ lang('ACP_GROUPSUB_SETTINGS_GENERAL') }}</legend>
 		<dl>
 			<dt><label for="notify_admins">{{ lang('ACP_GROUPSUB_NOTIFY_ADMINS') ~ lang('COLON') }}</label><br><span>{{ lang('ACP_GROUPSUB_NOTIFY_ADMINS_EXPLAIN') }}</span></dt>

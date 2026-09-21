@@ -24,6 +24,7 @@ use stevotvr\groupsub\operator\package_interface;
 use stevotvr\groupsub\operator\paypal_client_interface;
 use stevotvr\groupsub\operator\subscription_interface;
 use stevotvr\groupsub\operator\unit_helper_interface;
+use stevotvr\groupsub\payment\provider_manager_interface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -92,6 +93,11 @@ class main_controller
 	protected $paypal_client;
 
 	/**
+	 * @var provider_manager_interface
+	 */
+	protected $provider_manager;
+
+	/**
 	 * @var user
 	 */
 	protected $user;
@@ -113,19 +119,20 @@ class main_controller
 	/**
 	 * Constructor.
 	 *
-	 * @param auth                    $auth
-	 * @param config                  $config
-	 * @param db_text                 $config_text
-	 * @param currency_interface      $currency
-	 * @param helper                  $helper
-	 * @param language                $language
-	 * @param package_interface       $pkg_operator
-	 * @param request_interface       $request
-	 * @param subscription_interface  $sub_operator
-	 * @param template                $template
-	 * @param unit_helper_interface   $unit_helper
-	 * @param paypal_client_interface $paypal_client
-	 * @param user                    $user
+	 * @param auth                       $auth
+	 * @param config                     $config
+	 * @param db_text                    $config_text
+	 * @param currency_interface         $currency
+	 * @param helper                     $helper
+	 * @param language                   $language
+	 * @param package_interface          $pkg_operator
+	 * @param request_interface          $request
+	 * @param subscription_interface     $sub_operator
+	 * @param template                   $template
+	 * @param unit_helper_interface      $unit_helper
+	 * @param paypal_client_interface    $paypal_client
+	 * @param provider_manager_interface $provider_manager
+	 * @param user                       $user
 	 */
 	public function __construct(
 		auth $auth,
@@ -140,6 +147,7 @@ class main_controller
 		template $template,
 		unit_helper_interface $unit_helper,
 		paypal_client_interface $paypal_client,
+		provider_manager_interface $provider_manager,
 		user $user
 	)
 	{
@@ -155,6 +163,7 @@ class main_controller
 		$this->template = $template;
 		$this->unit_helper = $unit_helper;
 		$this->paypal_client = $paypal_client;
+		$this->provider_manager = $provider_manager;
 		$this->user = $user;
 	}
 
@@ -179,7 +188,17 @@ class main_controller
 	 */
 	public function handle($name)
 	{
-		if (!$this->config['stevotvr_groupsub_active'] && !$this->auth->acl_get('a_'))
+		$has_sandbox_gateway = false;
+		foreach ($this->provider_manager->get_enabled_providers() as $provider)
+		{
+			if ($provider->is_sandbox())
+			{
+				$has_sandbox_gateway = true;
+				break;
+			}
+		}
+
+		if ((!$this->config['stevotvr_groupsub_active'] || $has_sandbox_gateway) && !$this->auth->acl_get('a_'))
 		{
 			throw new http_exception(404, 'PAGE_NOT_FOUND');
 		}
@@ -355,8 +374,26 @@ class main_controller
 			throw new http_exception(404, 'PAGE_NOT_FOUND');
 		}
 
-		$is_recurring = $term['term']->get_recurring();
-		$plan_id = $term['term']->get_paypal_plan_id();
+		$term_entity = $term['term'];
+		$available_providers = $this->provider_manager->get_available_providers_for_term($term_entity);
+
+		$u_pix_create = $this->helper->route('stevotvr_groupsub_pix_create', array('term_id' => $term_id));
+		$u_pix_status = $this->helper->route('stevotvr_groupsub_pix_status', array('payment_id' => '__PAYMENT_ID__'));
+		$u_stripe_checkout = $this->helper->route('stevotvr_groupsub_checkout', array('gateway' => 'stripe', 'term_id' => $term_id));
+		$u_btcpay_checkout = $this->helper->route('stevotvr_groupsub_checkout', array('gateway' => 'btcpay', 'term_id' => $term_id));
+
+		$single_gateway = count($available_providers) === 1;
+		foreach ($available_providers as $provider)
+		{
+			$this->template->assign_block_vars('gateway', array(
+				'ID'         => $provider->get_id(),
+				'NAME'       => $provider->get_name(),
+				'S_SELECTED' => $single_gateway,
+			));
+		}
+
+		$is_recurring = $term_entity->get_recurring();
+		$plan_id = $term_entity->get_paypal_plan_id();
 
 		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
 		$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
@@ -367,7 +404,7 @@ class main_controller
 			'https://www.paypal.com/sdk/js?client-id=%s&locale=%s&currency=%s%s',
 			$client_id,
 			$this->language->lang('GROUPSUB_PP_LOCALE'),
-			$term['term']->get_currency(),
+			$term_entity->get_currency(),
 			$sdk_extra
 		);
 
@@ -381,23 +418,33 @@ class main_controller
 			'u_subscribe'		=> $u_subscribe,
 			'is_recurring'		=> (bool) $is_recurring,
 			'plan_id'			=> (string) $plan_id,
-			'term_id'			=> $term['term']->get_id(),
+			'term_id'			=> $term_entity->get_id(),
 			'lang_error'		=> $this->language->lang('GROUPSUB_PAYMENT_ERROR'),
 			'lang_cancelled'	=> $this->language->lang('GROUPSUB_PAYMENT_CANCELLED'),
 		));
 
 		$this->template->assign_vars(array(
-			'PP_ENABLED'	=> !empty($client_id) && !empty($client_secret),
-			'S_RECURRING'	=> (bool) $is_recurring,
+			'PP_AVAILABLE'      => isset($available_providers['paypal']),
+			'PIX_AVAILABLE'     => isset($available_providers['pix']),
+			'STRIPE_AVAILABLE'  => isset($available_providers['stripe']),
+			'BTCPAY_AVAILABLE'  => isset($available_providers['btcpay']),
+			'GATEWAYS_COUNT'    => count($available_providers),
 
-			'PKG_NAME'		=> $term['package']->get_name(),
-			'PKG_DESC'		=> $term['package']->get_desc_for_display(),
-			'TERM_PRICE'	=> $this->currency->format_price($term['term']->get_currency(), $term['term']->get_price()),
-			'TERM_LENGTH'	=> $term['term']->get_length() ? $this->unit_helper->get_formatted_timespan($term['term']->get_length()) : 0,
+			'U_PIX_CREATE'      => $u_pix_create,
+			'U_PIX_STATUS'      => $u_pix_status,
+			'U_STRIPE_CHECKOUT' => $u_stripe_checkout,
+			'U_BTCPAY_CHECKOUT' => $u_btcpay_checkout,
 
-			'PAYPAL_CONFIG'	=> $paypal_config,
+			'PP_ENABLED'	    => isset($available_providers['paypal']) && !empty($client_id) && !empty($client_secret),
+			'S_RECURRING'	    => (bool) $is_recurring,
 
-			'U_PPSDK'	=> $u_ppsdk,
+			'PKG_NAME'		    => $term['package']->get_name(),
+			'PKG_DESC'		    => $term['package']->get_desc_for_display(),
+			'TERM_PRICE'	    => $this->currency->format_price($term_entity->get_currency(), $term_entity->get_price()),
+			'TERM_LENGTH'	    => $term_entity->get_length() ? $this->unit_helper->get_formatted_timespan($term_entity->get_length()) : 0,
+
+			'PAYPAL_CONFIG'	    => $paypal_config,
+			'U_PPSDK'	        => $u_ppsdk,
 		));
 
 		return $this->helper->render('@stevotvr_groupsub/select_term.html', $term['package']->get_name());

@@ -12,7 +12,36 @@ stevotvr_groupsub_ppjs:
     path: /groupsub/ppjs/{action}
     defaults: { _controller: stevotvr.groupsub.controller.ppjs:handle }
 
+stevotvr_groupsub_pix_create:
+    path: /groupsub/pix/create/{term_id}
+    defaults: { _controller: stevotvr.groupsub.controller.pix:create_payment }
+    requirements:
+        term_id: \d+
+    methods: [POST]
+
+stevotvr_groupsub_pix_status:
+    path: /groupsub/pix/status/{payment_id}
+    defaults: { _controller: stevotvr.groupsub.controller.pix:check_status }
+    methods: [GET]
+
+stevotvr_groupsub_gateway_webhook:
+    path: /groupsub/webhook/{gateway}
+    defaults: { _controller: stevotvr.groupsub.controller.webhook:handle }
+    methods: [POST, GET]
+
+stevotvr_groupsub_checkout:
+    path: /groupsub/checkout/{gateway}/{term_id}
+    defaults: { _controller: stevotvr.groupsub.controller.checkout:handle }
+    requirements:
+        term_id: \d+
+    methods: [GET, POST]
+
+stevotvr_groupsub_checkout_return:
+    path: /groupsub/return/{gateway}
+    defaults: { _controller: stevotvr.groupsub.controller.checkout:return_handle }
+    methods: [GET]
+
 stevotvr_groupsub_webhook:
     path: /groupsub/webhook
-    defaults: { _controller: stevotvr.groupsub.controller.webhook:handle }
+    defaults: { _controller: stevotvr.groupsub.controller.webhook:handle, gateway: paypal }
     methods: [POST]

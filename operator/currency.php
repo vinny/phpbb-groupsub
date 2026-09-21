@@ -63,6 +63,14 @@ class currency extends operator implements currency_interface
 	/**
 	 * @inheritDoc
 	 */
+	public function format_price_raw($currency_code, $value)
+	{
+		return $this->format_value($currency_code, $value, false, false);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function parse_value($currency_code, $value)
 	{
 		$this->validate($currency_code);

@@ -10,6 +10,7 @@
 
 namespace stevotvr\groupsub\controller;
 
+use phpbb\auth\auth;
 use phpbb\config\config;
 use phpbb\controller\helper;
 use phpbb\language\language;
@@ -24,10 +25,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Group Subscription controller for the PayPal JavaScript backend.
+ * PayPal JavaScript SDK controller.
  */
 class ppjs_controller
 {
+	/**
+	 * @var auth
+	 */
+	protected $auth;
+
 	/**
 	 * @var config
 	 */
@@ -81,6 +87,7 @@ class ppjs_controller
 	/**
 	 * Constructor.
 	 *
+	 * @param auth                    $auth
 	 * @param config                  $config
 	 * @param currency_interface      $currency
 	 * @param helper                  $helper
@@ -93,6 +100,7 @@ class ppjs_controller
 	 * @param user                    $user
 	 */
 	public function __construct(
+		auth $auth,
 		config $config,
 		currency_interface $currency,
 		helper $helper,
@@ -105,6 +113,7 @@ class ppjs_controller
 		user $user
 	)
 	{
+		$this->auth = $auth;
 		$this->config = $config;
 		$this->currency = $currency;
 		$this->helper = $helper;
@@ -127,6 +136,12 @@ class ppjs_controller
 	public function handle($action)
 	{
 		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
+
+		if ((!$this->config['stevotvr_groupsub_active'] || $sandbox) && !$this->auth->acl_get('a_'))
+		{
+			return new JsonResponse(array('error' => $this->language->lang('PAGE_NOT_FOUND')), 404);
+		}
+
 		$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
 		$client_secret = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'] : '');
 

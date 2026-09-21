@@ -179,30 +179,45 @@ class transaction extends operator implements transaction_interface
 	/**
 	 * @inheritDoc
 	 */
-	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id)
+	public function record_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id, $gateway = 'paypal', $status = 'completed', $external_id = '')
 	{
-		return $this->insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id);
+		return $this->insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id, $gateway, $status, $external_id);
 	}
 
 	/**
 	 * Insert a transaction into the database.
 	 *
-	 * @param string  $trans_id The transaction ID
-	 * @param boolean $sandbox  Sandbox mode is enabled
-	 * @param int     $amount   The payment amount in the currency subunit
-	 * @param string  $currency The currency code
-	 * @param int     $user_id  The user ID
-	 * @param int     $sub_id   The subscription ID
-	 * @param string  $gross    The gross payment amount
-	 * @param string  $payer_id The PayPal payer ID
+	 * @param string  $trans_id    The transaction ID
+	 * @param boolean $sandbox     Sandbox mode is enabled
+	 * @param int     $amount      The payment amount in the currency subunit
+	 * @param string  $currency    The currency code
+	 * @param int     $user_id     The user ID
+	 * @param int     $sub_id      The subscription ID
+	 * @param string  $gross       The gross payment amount
+	 * @param string  $payer_id    The payer ID
+	 * @param string  $gateway     The payment gateway identifier
+	 * @param string  $status      The transaction status
+	 * @param string  $external_id The external provider transaction/order ID
 	 *
 	 * @return boolean The record was inserted successfully
 	 */
-	protected function insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id)
+	protected function insert_transaction($trans_id, $sandbox, $amount, $currency, $user_id, $sub_id, $gross, $payer_id, $gateway = 'paypal', $status = 'completed', $external_id = '')
 	{
 		if (!isset($this->currencies[$currency]))
 		{
 			return false;
+		}
+
+		$sql = 'SELECT 1
+				FROM ' . $this->trans_table . "
+				WHERE trans_id = '" . $this->db->sql_escape($trans_id) . "'";
+		$this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow();
+		$this->db->sql_freeresult();
+
+		if ($row)
+		{
+			return true;
 		}
 
 		$data = array(
@@ -214,6 +229,9 @@ class transaction extends operator implements transaction_interface
 			'trans_time'		=> time(),
 			'user_id'			=> (int) $user_id,
 			'sub_id'			=> (int) $sub_id,
+			'gateway'			=> (string) $gateway,
+			'status'			=> (string) $status,
+			'external_id'		=> (string) ($external_id !== '' ? $external_id : $trans_id),
 		);
 		$sql = 'INSERT INTO ' . $this->trans_table . '
 				' . $this->db->sql_build_array('INSERT', $data);

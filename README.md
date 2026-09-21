@@ -1,26 +1,30 @@
-# Group Subscription (PayPal) [![Tests](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml)
+# Group Subscription [![Tests](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-groupsub/actions/workflows/tests.yml)
 
-Group Subscription is a phpBB extension that allows board administrators to offer paid usergroup subscriptions through PayPal. Users are automatically added to groups upon payment and removed when their subscription ends.
+Group Subscription is a powerful phpBB extension that allows board administrators to offer paid usergroup subscriptions with multiple payment gateways (PayPal, Pix via Mercado Pago, Stripe, and BTCPay Server). Users are automatically added to groups upon payment and removed when their subscription ends.
 
 ## Features
 
-- **PayPal Checkout & Subscriptions REST API:** Accept payments securely using modern PayPal REST APIs and Smart Payment Buttons.
-- **Auto-Renewing Recurring Billing:** Offer true recurring subscriptions that automatically renew at the end of each billing period until cancelled.
-- **One-Time Fixed Term Options:** Seamlessly mix one-time purchases and recurring terms within the same or different packages.
-- **PayPal Webhooks Integration:** Cryptographically verified webhook handling for real-time automatic renewal extensions and cancellations.
+- **Multi-Gateway Architecture:** Accept payments through multiple payment providers:
+  - **PayPal:** PayPal Checkout & Subscriptions REST API with Smart Buttons and recurring vaulting.
+  - **Pix (Mercado Pago):** Dynamic Pix QR Code and Copia e Cola with instant real-time status polling.
+  - **Stripe:** Hosted Stripe Checkout for one-time credit card payments and auto-renewing subscriptions.
+  - **BTCPay Server:** Decentralized cryptocurrency payments supporting Bitcoin on-chain and Lightning Network.
+- **Dedicated ACP Payment Gateways Module:** Enable, disable, and configure individual gateways with independent sandbox testing modes.
+- **Auto-Renewing Recurring Billing:** Offer true recurring subscriptions (PayPal and Stripe) that automatically renew at the end of each billing period until cancelled.
+- **One-Time Fixed Term Options:** Seamlessly mix one-time purchases (Pix, BTCPay, Stripe, PayPal) and recurring terms within the same or different packages.
+- **Cryptographic Webhook Verification:** Real-time webhook processing with HMAC-SHA256 signature validation across all gateways.
 - **Self-Service Cancellation:** Subscribers can cancel auto-renewal directly from the forum with clear feedback while retaining group access until their term ends.
 - **Automated Group Management:** Automatically add subscribers to designated usergroups on start and remove them upon expiration.
 - **Default Group Assignment:** Optionally set a subscription group as the user’s default group while active.
 - **Automated Notification System:** Keep users and administrators informed about subscription start, automatic renewals, upcoming expirations, and cancellations.
 - **Grace Periods and Early Warnings:** Configurable expiration warning notices and grace periods before revoking group memberships.
-- **Sandbox Testing Mode:** Easily test both one-time and recurring payments with sandbox credentials and webhooks before going live.
+- **Sandbox Testing Mode:** Easily test payments with sandbox credentials and webhooks before going live.
 
 ## Requirements
 
 - PHP 8.2 or newer
 - phpBB 3.3.0 or newer
 - PHP cURL extension or `allow_url_fopen` with OpenSSL support
-- A PayPal Business or Developer account
 
 ## Installation
 

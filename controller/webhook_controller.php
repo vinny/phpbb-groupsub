@@ -15,181 +15,158 @@ use phpbb\language\language;
 use phpbb\notification\manager as notification_manager;
 use stevotvr\groupsub\operator\currency_interface;
 use stevotvr\groupsub\operator\package_interface;
-use stevotvr\groupsub\operator\paypal_client_interface;
 use stevotvr\groupsub\operator\subscription_interface;
 use stevotvr\groupsub\operator\transaction_interface;
+use stevotvr\groupsub\payment\provider_manager_interface;
+use stevotvr\groupsub\payment\webhook_result;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Controller for handling PayPal Webhook notifications.
+ * Controller for handling incoming Webhook notifications for all payment gateways.
  */
 class webhook_controller
 {
 	/**
 	 * @var config
 	 */
-	protected $config;
+	protected config $config;
 
 	/**
 	 * @var language
 	 */
-	protected $language;
-
-	/**
-	 * @var paypal_client_interface
-	 */
-	protected $paypal_client;
+	protected language $language;
 
 	/**
 	 * @var subscription_interface
 	 */
-	protected $sub_operator;
+	protected subscription_interface $sub_operator;
 
 	/**
 	 * @var package_interface
 	 */
-	protected $pkg_operator;
+	protected package_interface $pkg_operator;
 
 	/**
 	 * @var transaction_interface
 	 */
-	protected $trans_operator;
+	protected transaction_interface $trans_operator;
 
 	/**
 	 * @var currency_interface
 	 */
-	protected $currency;
+	protected currency_interface $currency;
 
 	/**
 	 * @var notification_manager
 	 */
-	protected $notification_manager;
+	protected notification_manager $notification_manager;
+
+	/**
+	 * @var provider_manager_interface
+	 */
+	protected provider_manager_interface $provider_manager;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param config                  $config
-	 * @param language                $language
-	 * @param paypal_client_interface $paypal_client
-	 * @param subscription_interface  $sub_operator
-	 * @param package_interface       $pkg_operator
-	 * @param transaction_interface   $trans_operator
-	 * @param currency_interface      $currency
-	 * @param notification_manager    $notification_manager
+	 * @param config                     $config
+	 * @param language                   $language
+	 * @param subscription_interface     $sub_operator
+	 * @param package_interface          $pkg_operator
+	 * @param transaction_interface      $trans_operator
+	 * @param currency_interface         $currency
+	 * @param notification_manager       $notification_manager
+	 * @param provider_manager_interface $provider_manager
 	 */
 	public function __construct(
 		config $config,
 		language $language,
-		paypal_client_interface $paypal_client,
 		subscription_interface $sub_operator,
 		package_interface $pkg_operator,
 		transaction_interface $trans_operator,
 		currency_interface $currency,
-		notification_manager $notification_manager
+		notification_manager $notification_manager,
+		provider_manager_interface $provider_manager
 	)
 	{
 		$this->config = $config;
 		$this->language = $language;
-		$this->paypal_client = $paypal_client;
 		$this->sub_operator = $sub_operator;
 		$this->pkg_operator = $pkg_operator;
 		$this->trans_operator = $trans_operator;
 		$this->currency = $currency;
 		$this->notification_manager = $notification_manager;
+		$this->provider_manager = $provider_manager;
 	}
 
 	/**
-	 * Handle incoming PayPal webhook notifications.
+	 * Handle incoming webhook notifications.
 	 *
 	 * @param Request $request
+	 * @param string  $gateway
 	 *
 	 * @return Response
 	 */
-	public function handle(Request $request)
+	public function handle(Request $request, string $gateway = 'paypal'): Response
 	{
-		$raw_body = (string) $request->getContent();
-		if ($raw_body === '')
+		$this->language->add_lang('common', 'stevotvr/groupsub');
+
+		$provider = $this->provider_manager->get_provider($gateway);
+		if (!$provider)
 		{
-			$raw_body = (string) @file_get_contents('php://input');
+			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_INVALID_ACTION')), 400);
 		}
 
-		if ($raw_body === '')
+		$result = $provider->handle_webhook($request);
+
+		if (!$result->is_valid())
 		{
-			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_EMPTY_BODY')), 400);
+			return new JsonResponse(array('error' => $result->get_message()), 400);
 		}
 
-		$sandbox = !empty($this->config['stevotvr_groupsub_pp_sandbox']);
-		$client_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_client' : 'stevotvr_groupsub_pp_client'] : '');
-		$client_secret = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_secret' : 'stevotvr_groupsub_pp_secret'] : '');
-		$webhook_id = (string) (isset($this->config[$sandbox ? 'stevotvr_groupsub_sb_webhook_id' : 'stevotvr_groupsub_webhook_id']) ? $this->config[$sandbox ? 'stevotvr_groupsub_sb_webhook_id' : 'stevotvr_groupsub_webhook_id'] : '');
+		$status = $result->get_status();
+		$sandbox = $provider->is_sandbox();
 
-		if ($client_id === '' || $client_secret === '')
+		if ($status === 'completed')
 		{
-			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_PP_CREDENTIALS')), 503);
-		}
-
-		$this->paypal_client->set_credentials($client_id, $client_secret, $sandbox);
-
-		// Verify signature if Webhook ID is configured
-		if ($webhook_id !== '')
-		{
-			$headers = $request->headers->all();
-			$is_valid = $this->paypal_client->verify_webhook_signature($headers, $raw_body, $webhook_id);
-			if (!$is_valid)
+			$sub_id = $result->get_subscription_id();
+			if ($sub_id !== '')
 			{
-				return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_INVALID_WEBHOOK_SIG')), 400);
+				$this->handle_subscription_renewed($sub_id, $result, $gateway, $sandbox);
 			}
 		}
-
-		$event = json_decode($raw_body, true);
-		if (!is_array($event) || empty($event['event_type']))
+		else if (in_array($status, array('cancelled', 'suspended'), true))
 		{
-			return new JsonResponse(array('error' => $this->language->lang('GROUPSUB_ERROR_INVALID_JSON_EVENT')), 400);
+			$sub_id = $result->get_subscription_id();
+			if ($sub_id !== '')
+			{
+				$this->handle_subscription_cancelled($sub_id);
+			}
 		}
-
-		$event_type = (string) $event['event_type'];
-		$resource = isset($event['resource']) && is_array($event['resource']) ? $event['resource'] : array();
-
-		switch ($event_type)
+		else if ($status === 'expired')
 		{
-			case 'PAYMENT.SALE.COMPLETED':
-				$this->handle_payment_sale_completed($resource, $sandbox);
-				break;
-
-			case 'BILLING.SUBSCRIPTION.CANCELLED':
-			case 'BILLING.SUBSCRIPTION.SUSPENDED':
-				$this->handle_subscription_cancelled($resource);
-				break;
-
-			case 'BILLING.SUBSCRIPTION.EXPIRED':
-				$this->handle_subscription_expired($resource);
-				break;
+			$sub_id = $result->get_subscription_id();
+			if ($sub_id !== '')
+			{
+				$this->handle_subscription_expired($sub_id);
+			}
 		}
 
 		return new JsonResponse(array('status' => 'success'), 200);
 	}
 
 	/**
-	 * Handle PAYMENT.SALE.COMPLETED webhook event.
+	 * Handle subscription renewal upon recurring payment.
 	 *
-	 * @param array $resource
-	 * @param bool  $sandbox
+	 * @param string         $subscription_id
+	 * @param webhook_result $result
+	 * @param string         $gateway
+	 * @param bool           $sandbox
 	 */
-	protected function handle_payment_sale_completed(array $resource, $sandbox)
+	protected function handle_subscription_renewed(string $subscription_id, webhook_result $result, string $gateway, bool $sandbox): void
 	{
-		$subscription_id = isset($resource['billing_agreement_id']) ? (string) $resource['billing_agreement_id'] : '';
-		if ($subscription_id === '' && isset($resource['subscription_id']))
-		{
-			$subscription_id = (string) $resource['subscription_id'];
-		}
-
-		if ($subscription_id === '')
-		{
-			return;
-		}
-
 		$subscription = $this->sub_operator->get_subscription_by_paypal_id($subscription_id);
 		if (!$subscription)
 		{
@@ -221,10 +198,10 @@ class webhook_controller
 			->save();
 
 		// Record the recurring transaction
-		$trans_id = isset($resource['id']) ? (string) $resource['id'] : '';
-		$amount_val = isset($resource['amount']['total']) ? (string) $resource['amount']['total'] : (isset($resource['amount']['value']) ? (string) $resource['amount']['value'] : '0.00');
-		$currency_code = isset($resource['amount']['currency']) ? (string) $resource['amount']['currency'] : (isset($resource['amount']['currency_code']) ? (string) $resource['amount']['currency_code'] : 'USD');
-		$payer_id = isset($resource['payer']['payer_id']) ? (string) $resource['payer']['payer_id'] : '';
+		$trans_id = $result->get_transaction_id();
+		$amount_val = $result->get_amount();
+		$currency_code = $result->get_currency() !== '' ? $result->get_currency() : 'USD';
+		$payer_id = $result->get_payer_id();
 
 		if ($trans_id !== '')
 		{
@@ -237,7 +214,10 @@ class webhook_controller
 				$subscription->get_user(),
 				$subscription->get_id(),
 				$amount_val,
-				$payer_id
+				$payer_id,
+				$gateway,
+				'completed',
+				$result->get_external_id()
 			);
 		}
 
@@ -252,30 +232,24 @@ class webhook_controller
 		}
 
 		$notification_data = array(
-			'sub_id'		=> $subscription->get_id(),
-			'user_id'		=> $subscription->get_user(),
-			'pkg_id'		=> $subscription->get_package(),
-			'pkg_ident'		=> $pkg_ident,
-			'pkg_name'		=> $pkg_name,
-			'sub_expires'	=> $new_expire,
+			'sub_id'      => $subscription->get_id(),
+			'user_id'     => $subscription->get_user(),
+			'pkg_id'      => $subscription->get_package(),
+			'pkg_ident'   => $pkg_ident,
+			'pkg_name'    => $pkg_name,
+			'sub_expires' => $new_expire,
 		);
 
 		$this->notification_manager->add_notifications('stevotvr.groupsub.notification.type.renewed', $notification_data);
 	}
 
 	/**
-	 * Handle BILLING.SUBSCRIPTION.CANCELLED & BILLING.SUBSCRIPTION.SUSPENDED.
+	 * Handle cancellation/suspension of a subscription.
 	 *
-	 * @param array $resource
+	 * @param string $subscription_id
 	 */
-	protected function handle_subscription_cancelled(array $resource)
+	protected function handle_subscription_cancelled(string $subscription_id): void
 	{
-		$subscription_id = isset($resource['id']) ? (string) $resource['id'] : '';
-		if ($subscription_id === '')
-		{
-			return;
-		}
-
 		$subscription = $this->sub_operator->get_subscription_by_paypal_id($subscription_id);
 		if ($subscription)
 		{
@@ -284,18 +258,12 @@ class webhook_controller
 	}
 
 	/**
-	 * Handle BILLING.SUBSCRIPTION.EXPIRED.
+	 * Handle expiration of a subscription.
 	 *
-	 * @param array $resource
+	 * @param string $subscription_id
 	 */
-	protected function handle_subscription_expired(array $resource)
+	protected function handle_subscription_expired(string $subscription_id): void
 	{
-		$subscription_id = isset($resource['id']) ? (string) $resource['id'] : '';
-		if ($subscription_id === '')
-		{
-			return;
-		}
-
 		$subscription = $this->sub_operator->get_subscription_by_paypal_id($subscription_id);
 		if ($subscription)
 		{

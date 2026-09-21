@@ -49,6 +49,18 @@ interface currency_interface
 	public function format_price($currency_code, $value);
 
 	/**
+	 * Format a price as a raw decimal string (e.g. "10.00") without localization.
+	 *
+	 * @param string $currency_code The currency code
+	 * @param int    $value         The value in the subunit of the currency
+	 *
+	 * @return string The raw decimal price
+	 *
+	 * @throws unexpected_value
+	 */
+	public function format_price_raw($currency_code, $value);
+
+	/**
 	 * Parse a formatted price value into the subunit of the currency.
 	 *
 	 * @param string $currency_code The currency code

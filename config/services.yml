@@ -12,6 +12,7 @@ services:
             - '@controller.helper'
             - '@stevotvr.groupsub.operator.package'
             - '@template'
+            - '@stevotvr.groupsub.payment.provider_manager'
             - '%stevotvr.groupsub.tables.actions%'
             - '%stevotvr.groupsub.tables.subs%'
         tags:
@@ -92,6 +93,61 @@ services:
         tags:
             - { name: notification.type }
 
+    stevotvr.groupsub.payment.provider_manager:
+        class: stevotvr\groupsub\payment\provider_manager
+        calls:
+            - method: register_provider
+              arguments:
+                - '@stevotvr.groupsub.payment.provider.paypal'
+            - method: register_provider
+              arguments:
+                - '@stevotvr.groupsub.payment.provider.pix'
+            - method: register_provider
+              arguments:
+                - '@stevotvr.groupsub.payment.provider.stripe'
+            - method: register_provider
+              arguments:
+                - '@stevotvr.groupsub.payment.provider.btcpay'
+
+    stevotvr.groupsub.payment.provider.paypal:
+        class: stevotvr\groupsub\payment\providers\paypal_provider
+        arguments:
+            - '@config'
+            - '@language'
+            - '@controller.helper'
+            - '@stevotvr.groupsub.operator.paypal_client'
+            - '@stevotvr.groupsub.operator.currency'
+
+    stevotvr.groupsub.payment.provider.pix:
+        class: stevotvr\groupsub\payment\providers\pix_provider
+        arguments:
+            - '@config'
+            - '@language'
+            - '@controller.helper'
+            - '@stevotvr.groupsub.operator.mercadopago_client'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@user'
+
+    stevotvr.groupsub.payment.provider.stripe:
+        class: stevotvr\groupsub\payment\providers\stripe_provider
+        arguments:
+            - '@config'
+            - '@language'
+            - '@controller.helper'
+            - '@stevotvr.groupsub.operator.stripe_client'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@user'
+
+    stevotvr.groupsub.payment.provider.btcpay:
+        class: stevotvr\groupsub\payment\providers\btcpay_provider
+        arguments:
+            - '@config'
+            - '@language'
+            - '@controller.helper'
+            - '@stevotvr.groupsub.operator.btcpay_client'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@user'
+
     stevotvr.groupsub.controller.acp:
         class: stevotvr\groupsub\controller\acp_base_controller
         abstract: true
@@ -112,6 +168,14 @@ services:
             - method: setup
               arguments:
                 - '@config_text'
+
+    stevotvr.groupsub.controller.acp.gateways:
+        class: stevotvr\groupsub\controller\acp_gateways_controller
+        parent: stevotvr.groupsub.controller.acp
+        calls:
+            - method: setup
+              arguments:
+                - '@stevotvr.groupsub.payment.provider_manager'
 
     stevotvr.groupsub.controller.acp.package:
         class: stevotvr\groupsub\controller\acp_pkgs_controller
@@ -172,6 +236,7 @@ services:
             - '@template'
             - '@stevotvr.groupsub.operator.unit_helper'
             - '@stevotvr.groupsub.operator.paypal_client'
+            - '@stevotvr.groupsub.payment.provider_manager'
             - '@user'
         calls:
             - method: set_path_info
@@ -182,6 +247,7 @@ services:
     stevotvr.groupsub.controller.ppjs:
         class: stevotvr\groupsub\controller\ppjs_controller
         arguments:
+            - '@auth'
             - '@config'
             - '@stevotvr.groupsub.operator.currency'
             - '@controller.helper'
@@ -193,17 +259,48 @@ services:
             - '@stevotvr.groupsub.operator.paypal_client'
             - '@user'
 
+    stevotvr.groupsub.controller.pix:
+        class: stevotvr\groupsub\controller\pix_controller
+        arguments:
+            - '@auth'
+            - '@config'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@controller.helper'
+            - '@language'
+            - '@request'
+            - '@stevotvr.groupsub.operator.package'
+            - '@stevotvr.groupsub.operator.transaction'
+            - '@stevotvr.groupsub.operator.subscription'
+            - '@stevotvr.groupsub.payment.provider_manager'
+            - '@user'
+
+    stevotvr.groupsub.controller.checkout:
+        class: stevotvr\groupsub\controller\checkout_controller
+        arguments:
+            - '@auth'
+            - '@config'
+            - '@controller.helper'
+            - '@language'
+            - '@request'
+            - '@stevotvr.groupsub.operator.package'
+            - '@stevotvr.groupsub.operator.subscription'
+            - '@stevotvr.groupsub.operator.transaction'
+            - '@stevotvr.groupsub.operator.currency'
+            - '@stevotvr.groupsub.operator.unit_helper'
+            - '@stevotvr.groupsub.payment.provider_manager'
+            - '@user'
+
     stevotvr.groupsub.controller.webhook:
         class: stevotvr\groupsub\controller\webhook_controller
         arguments:
             - '@config'
             - '@language'
-            - '@stevotvr.groupsub.operator.paypal_client'
             - '@stevotvr.groupsub.operator.subscription'
             - '@stevotvr.groupsub.operator.package'
             - '@stevotvr.groupsub.operator.transaction'
             - '@stevotvr.groupsub.operator.currency'
             - '@notification_manager'
+            - '@stevotvr.groupsub.payment.provider_manager'
 
     stevotvr.groupsub.entity:
         class: stevotvr\groupsub\entity\entity
@@ -302,3 +399,12 @@ services:
         class: stevotvr\groupsub\operator\paypal_client
         arguments:
             - '@config'
+
+    stevotvr.groupsub.operator.mercadopago_client:
+        class: stevotvr\groupsub\operator\mercadopago_client
+
+    stevotvr.groupsub.operator.stripe_client:
+        class: stevotvr\groupsub\operator\stripe_client
+
+    stevotvr.groupsub.operator.btcpay_client:
+        class: stevotvr\groupsub\operator\btcpay_client

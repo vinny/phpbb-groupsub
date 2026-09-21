@@ -26,6 +26,11 @@ class main_info
 					'auth'	=> 'ext_stevotvr/groupsub && acl_a_groupsub_settings',
 					'cat'	=> array('ACP_GROUPSUB_TITLE'),
 				),
+				'gateways'	=> array(
+					'title'	=> 'ACP_GROUPSUB_GATEWAYS',
+					'auth'	=> 'ext_stevotvr/groupsub && acl_a_groupsub_settings',
+					'cat'	=> array('ACP_GROUPSUB_TITLE'),
+				),
 				'packages'	=> array(
 					'title'	=> 'ACP_GROUPSUB_MANAGE_PKGS',
 					'auth'	=> 'ext_stevotvr/groupsub && acl_a_groupsub_packages',

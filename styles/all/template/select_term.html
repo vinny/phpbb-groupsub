@@ -1,4 +1,5 @@
 {% include 'overall_header.html' %}
+{% INCLUDECSS '@stevotvr_groupsub/groupsub.css' %}
 
 <form action="{{ U_ACTION }}" method="post">
 
@@ -47,26 +48,105 @@
 
 			<hr>
 
-			<fieldset class="submit-buttons">
-				{% if PP_ENABLED %}
-				<noscript><p class="error">{{ lang('GROUPSUB_JS_REQUIRED') }}</p></noscript>
-				<div id="paypal-error" class="rules" style="display: none; margin-bottom: 10px;"></div>
-				<div id="paypal-loading" style="display: none; margin-bottom: 10px;"><i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i> {{ lang('GROUPSUB_PROCESSING') }}</div>
-				<script>paypal_button_config = {{ PAYPAL_CONFIG|raw }};</script>
-				<div id="paypal-button-container"></div>
-				{% if not INCLUDED_PAYPALSDKJS %}
-					{% INCLUDEJS U_PPSDK %}
-					{% DEFINE INCLUDED_PAYPALSDKJS = true %}
-				{% endif %}
-				{% INCLUDEJS '@stevotvr_groupsub/paypal_buttons.js' %}
-				{% endif %}
-				<a href="{{ U_ACTION }}" class="button2">{{ lang('CANCEL') }}</a>
-			</fieldset>
+			<div class="groupsub-gateways-container">
+				{% if GATEWAYS_COUNT == 0 %}
+					<div class="rules"><p>{{ lang('GROUPSUB_NO_AVAILABLE_GATEWAYS') }}</p></div>
+				{% else %}
 
-			<fieldset id="paypal-success" style="display: none;">
-				<div class="successbox">
-					<p>{{ lang('GROUPSUB_RETURN_MESSAGE', PKG_NAME, TERM_LENGTH) }}</p>
-				</div>
+					{% if GATEWAYS_COUNT > 1 %}
+					<p><strong>{{ lang('GROUPSUB_SELECT_GATEWAY') }}</strong></p>
+					<div class="groupsub-gateway-selector">
+						{% for gw in loops.gateway %}
+						<label class="groupsub-gateway-option{% if gw.S_SELECTED %} is-active{% endif %}">
+							<input type="radio" name="groupsub_gateway" value="{{ gw.ID }}" class="groupsub-gateway-radio"{% if gw.S_SELECTED %} checked{% endif %}>
+							<span class="groupsub-gateway-icon">
+								{% if gw.ID == 'paypal' %}<i class="fa fa-paypal fa-fw" style="color: #003087;" aria-hidden="true"></i>{% endif %}
+								{% if gw.ID == 'pix' %}<i class="fa fa-qrcode fa-fw" style="color: #00bdae;" aria-hidden="true"></i>{% endif %}
+								{% if gw.ID == 'stripe' %}<i class="fa fa-credit-card fa-fw" style="color: #635bff;" aria-hidden="true"></i>{% endif %}
+								{% if gw.ID == 'btcpay' %}<i class="fa fa-btc fa-fw" style="color: #f7931a;" aria-hidden="true"></i>{% endif %}
+							</span>
+							<span class="groupsub-gateway-label">{{ gw.NAME }}</span>
+						</label>
+						{% endfor %}
+					</div>
+					{% endif %}
+
+					{# --- PAYPAL PANE --- #}
+					{% if PP_AVAILABLE %}
+					<div id="groupsub-pane-paypal" class="groupsub-pane{% if GATEWAYS_COUNT == 1 %} is-active{% endif %}">
+						{% if PP_ENABLED %}
+						<noscript><p class="error">{{ lang('GROUPSUB_JS_REQUIRED') }}</p></noscript>
+						<div id="paypal-error" class="rules" style="display: none; margin-bottom: 10px;"></div>
+						<div id="paypal-loading" style="display: none; margin-bottom: 10px;"><i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i> {{ lang('GROUPSUB_PROCESSING') }}</div>
+						<script>paypal_button_config = {{ PAYPAL_CONFIG|raw }};</script>
+						<div id="paypal-button-container"></div>
+						{% if not INCLUDED_PAYPALSDKJS %}
+							{% INCLUDEJS U_PPSDK %}
+							{% DEFINE INCLUDED_PAYPALSDKJS = true %}
+						{% endif %}
+						{% INCLUDEJS '@stevotvr_groupsub/paypal_buttons.js' %}
+						{% endif %}
+					</div>
+					{% endif %}
+
+					{# --- PIX PANE --- #}
+					{% if PIX_AVAILABLE %}
+					<div id="groupsub-pane-pix" class="groupsub-pane{% if GATEWAYS_COUNT == 1 %} is-active{% endif %}">
+						<div class="groupsub-pix-card">
+							<div id="groupsub-pix-error" class="rules" style="display: none; margin-bottom: 10px;"></div>
+							<div id="groupsub-pix-loading" style="display: none; margin-bottom: 10px;"><i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i> {{ lang('GROUPSUB_PROCESSING') }}</div>
+
+							<button type="button" id="groupsub-pix-btn-generate" class="groupsub-btn groupsub-btn-pix"
+								data-url-create="{{ U_PIX_CREATE }}"
+								data-url-status="{{ U_PIX_STATUS }}"
+								data-lang-error="{{ lang('GROUPSUB_PAYMENT_ERROR') }}"
+								data-lang-cancelled="{{ lang('GROUPSUB_PAYMENT_CANCELLED') }}">
+								<i class="fa fa-qrcode" aria-hidden="true"></i> {{ lang('GROUPSUB_PIX_GENERATE_BTN') }}
+							</button>
+
+							<div id="groupsub-pix-display" style="display: none;">
+								<p><strong>{{ lang('GROUPSUB_PIX_SCAN_QR') }}</strong></p>
+								<div class="groupsub-pix-qr">
+									<img id="groupsub-pix-img" src="" alt="Pix QR Code">
+								</div>
+								<div class="groupsub-pix-copy-box">
+									<input type="text" id="groupsub-pix-code" class="groupsub-pix-code-input" readonly value="">
+									<button type="button" id="groupsub-pix-btn-copy" class="button2" data-lang-copied="{{ lang('GROUPSUB_PIX_COPIED') }}">
+										<i class="fa fa-copy" aria-hidden="true"></i> {{ lang('GROUPSUB_PIX_COPY_BTN') }}
+									</button>
+								</div>
+								<p class="groupsub-pix-timer"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ lang('GROUPSUB_PIX_WAITING') }}</p>
+							</div>
+
+						</div>
+					</div>
+					{% endif %}
+
+					{# --- STRIPE PANE --- #}
+					{% if STRIPE_AVAILABLE %}
+					<div id="groupsub-pane-stripe" class="groupsub-pane{% if GATEWAYS_COUNT == 1 %} is-active{% endif %}" style="text-align: center;">
+						<p><i class="fa fa-credit-card" aria-hidden="true"></i> {{ lang('GROUPSUB_PAY_WITH_STRIPE') }}</p>
+						<a href="{{ U_STRIPE_CHECKOUT }}" class="groupsub-btn groupsub-btn-stripe">
+							{{ lang('GROUPSUB_STRIPE_BTN') }} &raquo;
+						</a>
+					</div>
+					{% endif %}
+
+					{# --- BTCPAY PANE --- #}
+					{% if BTCPAY_AVAILABLE %}
+					<div id="groupsub-pane-btcpay" class="groupsub-pane{% if GATEWAYS_COUNT == 1 %} is-active{% endif %}" style="text-align: center;">
+						<p><i class="fa fa-btc" aria-hidden="true"></i> {{ lang('GROUPSUB_PAY_WITH_BTCPAY') }}</p>
+						<a href="{{ U_BTCPAY_CHECKOUT }}" class="groupsub-btn groupsub-btn-btcpay">
+							{{ lang('GROUPSUB_BTCPAY_BTN') }} &raquo;
+						</a>
+					</div>
+					{% endif %}
+
+				{% endif %}
+			</div>
+
+			<fieldset class="submit-buttons">
+				<a href="{{ U_ACTION }}" class="button2">{{ lang('CANCEL') }}</a>
 			</fieldset>
 
 		</div>
@@ -84,4 +164,5 @@
 
 </form>
 
+{% INCLUDEJS '@stevotvr_groupsub/gateways.js' %}
 {% include 'overall_footer.html' %}

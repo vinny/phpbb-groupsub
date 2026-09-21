@@ -17,6 +17,7 @@ class ppjs_controller_test extends \phpbb_test_case
 	 */
 	protected $controller;
 
+	protected $auth;
 	protected $config;
 	protected $currency;
 	protected $helper;
@@ -31,6 +32,14 @@ class ppjs_controller_test extends \phpbb_test_case
 	public function setUp(): void
 	{
 		parent::setUp();
+
+		$this->auth = $this->getMockBuilder('\phpbb\auth\auth')
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->auth->expects($this->any())
+			->method('acl_get')
+			->willReturn(true);
 
 		$this->config = $this->getMockBuilder('\phpbb\config\config')
 			->disableOriginalConstructor()
@@ -81,6 +90,7 @@ class ppjs_controller_test extends \phpbb_test_case
 		);
 
 		$this->controller = new \stevotvr\groupsub\controller\ppjs_controller(
+			$this->auth,
 			$this->config,
 			$this->currency,
 			$this->helper,
